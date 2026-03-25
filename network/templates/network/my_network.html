@@ -1,0 +1,103 @@
+{% extends 'network/base.html' %}
+
+{% block title %}My Network | NicheNetwork{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+
+<div style="margin-bottom: 3rem;">
+    <h2>Pending Requests</h2>
+    <div style="display: grid; gap: 1rem;" id="pending-list">
+        {% for req in pending_requests %}
+            <div id="request-{{ req.id }}" style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="margin: 0 0 0.25rem 0;">
+                        <a href="{% url 'network:profile' req.from_user.username %}" style="color: #111827; text-decoration: none;">
+                            {{ req.from_user.first_name }} {{ req.from_user.last_name }}
+                        </a>
+                    </h3>
+                    <p style="margin: 0; color: #4b5563; font-size: 0.9rem;">{{ req.from_user.headline }}</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="action-btn" data-id="{{ req.id }}" data-action="accept" style="padding: 0.5rem 1rem; background-color: #059669; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Accept</button>
+                    <button class="action-btn" data-id="{{ req.id }}" data-action="decline" style="padding: 0.5rem 1rem; background-color: #e5e7eb; color: #374151; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Decline</button>
+                </div>
+            </div>
+        {% empty %}
+            <p style="color: #6b7280;">No pending connection requests.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<div>
+    <h2>My Connections</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem;">
+        {% for conn in active_connections %}
+            {% with peer=conn.from_user|yesno:request.user,conn.to_user,conn.from_user %}
+                {% if peer == request.user %}{% set peer = conn.to_user %}{% endif %} {% endwith %}
+            
+            <div style="background: white; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #10b981; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                {% if conn.from_user == request.user %}
+                    <h3 style="margin-top: 0;"><a href="{% url 'network:profile' conn.to_user.username %}" style="color: #111827; text-decoration: none;">{{ conn.to_user.first_name }} {{ conn.to_user.last_name }}</a></h3>
+                    <p style="color: #4b5563; font-size: 0.9rem;">{{ conn.to_user.headline }}</p>
+                {% else %}
+                    <h3 style="margin-top: 0;"><a href="{% url 'network:profile' conn.from_user.username %}" style="color: #111827; text-decoration: none;">{{ conn.from_user.first_name }} {{ conn.from_user.last_name }}</a></h3>
+                    <p style="color: #4b5563; font-size: 0.9rem;">{{ conn.from_user.headline }}</p>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p style="color: #6b7280;">You haven't made any connections yet. <a href="{% url 'network:directory' %}">Find professionals</a>.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const actionButtons = document.querySelectorAll('.action-btn');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    actionButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            const connectionId = button.getAttribute('data-id');
+            const action = button.getAttribute('data-action');
+            const cardElement = document.getElementById(`request-${connectionId}`);
+
+            // Disable buttons in this card to prevent double-clicks
+            const cardButtons = cardElement.querySelectorAll('button');
+            cardButtons.forEach(btn => btn.disabled = true);
+            button.innerText = 'Processing...';
+
+            try {
+                const response = await fetch(`/connection/${connectionId}/update/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ action: action })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Smoothly remove the card from the UI
+                    cardElement.style.transition = 'opacity 0.3s ease';
+                    cardElement.style.opacity = '0';
+                    setTimeout(() => cardElement.remove(), 300);
+                    
+                    // Optional: If accepted, you could append it to the "My Connections" grid dynamically, 
+                    // but for MVP, requiring a refresh to see it down below is perfectly fine.
+                } else {
+                    alert(data.error || 'Something went wrong.');
+                    cardButtons.forEach(btn => btn.disabled = false);
+                    button.innerText = action === 'accept' ? 'Accept' : 'Decline';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                cardButtons.forEach(btn => btn.disabled = false);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

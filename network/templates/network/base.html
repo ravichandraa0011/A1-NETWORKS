@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Niche Network{% endblock %}</title>
+
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9fafb;
+            color: #111827;
+        }
+
+        .navbar {
+            background-color: #1f2937;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .message.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .message.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        .message.info {
+            background-color: #e0f2fe;
+            color: #075985;
+            border: 1px solid #0ea5e9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ✅ NAVBAR -->
+    <nav class="navbar">
+        <a href="/">NicheNetwork</a>
+
+        <div>
+            {% if user.is_authenticated %}
+                <span style="margin-right: 15px;">
+                    Welcome, {{ user.first_name }}
+                </span>
+
+                <a href="{% url 'network:directory' %}" style="margin-right: 15px;">Directory</a>
+                <a href="{% url 'network:my_network' %}" style="margin-right: 15px;">My Network</a>
+                <a href="{% url 'network:profile' user.username %}" style="margin-right: 15px;">My Profile</a>
+
+                <form action="{% url 'accounts:logout' %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit"
+                        style="background: none; border: none; color: white; cursor: pointer; font-weight: bold;">
+                        Log Out
+                    </button>
+                </form>
+
+            {% else %}
+                <a href="{% url 'accounts:login' %}" style="margin-right: 15px;">Log In</a>
+                <a href="{% url 'accounts:register' %}">Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- ✅ DJANGO MESSAGES -->
+    {% if messages %}
+        <div class="container" style="margin-top: 1rem;">
+            {% for message in messages %}
+                <div class="message {% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% else %}info{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- ✅ MAIN CONTENT -->
+    <main class="container">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+</body>
+</html>

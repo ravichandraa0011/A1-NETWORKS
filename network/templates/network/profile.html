@@ -1,0 +1,196 @@
+{% extends 'network/base.html' %}
+
+{% block title %}{{ profile_user.first_name }}'s Profile | NicheNetwork{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; position: relative;">
+    
+    {% if request.user == profile_user %}
+        <a href="{% url 'accounts:edit_profile' %}" style="position: absolute; top: 2rem; right: 2rem; padding: 0.5rem 1rem; background-color: #f3f4f6; color: #374151; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.9rem; border: 1px solid #d1d5db;">
+            ✎ Edit Profile
+        </a>
+    {% endif %}
+
+    <h1 style="margin-top: 0;">
+        {{ profile_user.first_name }} {{ profile_user.last_name }}
+        {% if profile_user.is_industry_verified %}
+            <span style="color: #059669; font-size: 0.9rem;">✓ Verified Professional</span>
+        {% endif %}
+    </h1>
+    <h3 style="color: #4b5563;">{{ profile_user.headline|default:"Professional in the Industry" }}</h3>
+
+    {% if user.is_authenticated and user != profile_user %}
+        <button id="connect-btn" 
+                data-username="{{ profile_user.username }}" 
+                data-status="{{ connection_status|default:'none' }}"
+                style="padding: 0.5rem 1rem; background-color: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            
+            {% if connection_status == 'pending' %} Request Pending
+            {% elif connection_status == 'accepted' %} Connected
+            {% else %} Connect
+            {% endif %}
+        </button>
+    {% endif %}
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h2>Verified Project Portfolio</h2>
+    
+    {% if request.user == profile_user %}
+        <a href="{% url 'network:add_project' %}" style="padding: 0.5rem 1rem; background-color: #10b981; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">
+            + Add Project
+        </a>
+    {% endif %}
+</div>
+
+<div style="display: grid; gap: 1rem;">
+    {% for project in projects %}
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #2563eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <h3 style="margin-top: 0;">{{ project.title }}</h3>
+            <p>{{ project.description }}</p>
+            
+            {% if project.is_peer_reviewed %}
+                <span style="background: #d1fae5; color: #065f46; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">✓ Peer Reviewed</span>
+            {% endif %}
+
+            {% if project.external_link %}
+                <a href="{{ project.external_link }}" target="_blank" style="display: block; margin-top: 1rem; color: #2563eb;">View Project Proof &rarr;</a>
+            {% endif %}
+
+            <div id="reviews-for-{{ project.id }}" style="margin-top: 1.5rem; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+                {% for review in project.reviews.all %}
+                    <div style="margin-bottom: 1rem; background: #f9fafb; padding: 1rem; border-radius: 6px;">
+                        <p style="margin: 0 0 0.5rem 0; font-style: italic; color: #4b5563;">"{{ review.review_text }}"</p>
+                        <small style="color: #6b7280;">— Reviewed by <a href="{% url 'network:profile' review.reviewer.username %}" style="color: #2563eb;">{{ review.reviewer.first_name }} {{ review.reviewer.last_name }}</a></small>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if connection_status == 'accepted' and request.user != profile_user %}
+                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                    <input type="text" id="review-input-{{ project.id }}" placeholder="Write a verified review..." style="flex: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;">
+                    <button class="submit-review-btn" data-project-id="{{ project.id }}" style="padding: 0.5rem 1rem; background-color: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Submit</button>
+                </div>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p style="color: #6b7280;">No verified projects added yet.</p>
+    {% endfor %}
+</div>
+    {% empty %}
+        <p style="color: #6b7280;">No verified projects added yet.</p>
+    {% endfor %}
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const connectBtn = document.getElementById('connect-btn');
+    
+    if (connectBtn) {
+        connectBtn.addEventListener('click', async () => {
+            // 1. Get data from the button and the page
+            const username = connectBtn.getAttribute('data-username');
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            // 2. Disable button to prevent double-clicks
+            connectBtn.disabled = true;
+            connectBtn.innerText = 'Processing...';
+
+            try {
+                // 3. Send the POST request
+                const response = await fetch(`/user/${username}/connect/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 4. Update UI based on the new state
+                    if (data.status === 'pending') {
+                        connectBtn.innerText = 'Request Pending';
+                        connectBtn.style.backgroundColor = '#6b7280'; // Gray out
+                    } else if (data.status === 'none') {
+                        connectBtn.innerText = 'Connect';
+                        connectBtn.style.backgroundColor = '#2563eb'; // Blue again
+                    }
+                    connectBtn.setAttribute('data-status', data.status);
+                } else {
+                    alert(data.error || 'Something went wrong.');
+                    connectBtn.innerText = 'Error';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                // Re-enable button
+                connectBtn.disabled = false;
+            }
+        });
+    }
+});
+// ... (Your existing connectBtn code stays here) ...
+
+    // NEW LOGIC: Handling Peer Review Submissions
+    const reviewButtons = document.querySelectorAll('.submit-review-btn');
+    
+    reviewButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            const projectId = button.getAttribute('data-project-id');
+            const inputField = document.getElementById(`review-input-${projectId}`);
+            const reviewText = inputField.value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            if (!reviewText.trim()) {
+                alert('Please write a review before submitting.');
+                return;
+            }
+
+            // Disable to prevent double-clicks
+            button.disabled = true;
+            button.innerText = 'Sending...';
+
+            try {
+                const response = await fetch(`/project/${projectId}/review/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ review_text: reviewText })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Create the new review HTML dynamically
+                    const reviewContainer = document.getElementById(`reviews-for-${projectId}`);
+                    const newReviewHTML = `
+                        <div style="margin-bottom: 1rem; background: #f9fafb; padding: 1rem; border-radius: 6px; border-left: 3px solid #10b981;">
+                            <p style="margin: 0 0 0.5rem 0; font-style: italic; color: #4b5563;">"${data.review_text}"</p>
+                            <small style="color: #6b7280;">— Reviewed by You</small>
+                        </div>
+                    `;
+                    reviewContainer.insertAdjacentHTML('beforeend', newReviewHTML);
+                    
+                    // Clear and hide the input field
+                    inputField.value = '';
+                    inputField.style.display = 'none';
+                    button.style.display = 'none';
+                } else {
+                    alert(data.error || 'Something went wrong.');
+                    button.disabled = false;
+                    button.innerText = 'Submit';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                button.disabled = false;
+                button.innerText = 'Submit';
+            }
+        });
+    });
+</script>
+
+{% endblock %}

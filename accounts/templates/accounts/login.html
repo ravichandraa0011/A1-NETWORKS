@@ -1,0 +1,21 @@
+{% extends 'network/base.html' %}
+
+{% block title %}Log In{% endblock %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 0 auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <h2>Welcome Back</h2>
+    
+    <form method="POST" style="display: flex; flex-direction: column; gap: 1rem;">
+        {% csrf_token %}
+        {{ form.as_p }}
+        
+        <button type="submit" style="padding: 0.75rem; background-color: #059669; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
+            Log In
+        </button>
+    </form>
+    <p style="text-align: center; margin-top: 1rem;">
+        Need an account? <a href="{% url 'accounts:register' %}" style="color: #2563eb;">Register here</a>.
+    </p>
+</div>
+{% endblock %}

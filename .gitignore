@@ -1,0 +1,13 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+
+# Local Database
+db.sqlite3
+
+# Static files directory
+staticfiles/
