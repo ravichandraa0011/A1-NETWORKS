@@ -4,8 +4,13 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import ProjectPortfolio, Connection, ProjectReview # Added ProjectReview
+from .models import ProjectPortfolio, Connection, ProjectReview 
+from .forms import ProjectForm# Added ProjectReview
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from .models import Connection, ProjectPortfolio, ProjectReview, ProfileView
+from .models import Connection, ProjectPortfolio, ProjectReview, ProfileView, Message
+from jobs.models import Job
 
 User = get_user_model()
 @login_required
@@ -109,8 +114,20 @@ def handle_connection(request, username):
     connection.delete()
     return JsonResponse({'status': 'none', 'action': 'deleted'})
 
+@login_required
 def profile_view(request, username):
     profile_user = get_object_or_404(User, username=username)
+    
+    # --- NEW: TRACK THE PROFILE VIEW ---
+    if request.user != profile_user:
+        ProfileView.objects.update_or_create(
+            viewer=request.user,
+            viewed_user=profile_user,
+            defaults={'timestamp': timezone.now()}
+        )
+    # -----------------------------------
+
+    # ... (Keep the rest of your profile_view logic exactly the same below this) ...
     
     # OPTIMIZED: We added prefetch_related to load reviews efficiently
     projects = ProjectPortfolio.objects.filter(owner=profile_user).prefetch_related('reviews__reviewer').order_by('-created_at')
@@ -175,3 +192,93 @@ def add_project_review(request, project_id):
 
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid data format.'}, status=400)
+def portfolio_maker(request, username):
+    # Fetch the user and their verified projects
+    profile_user = get_object_or_404(User, username=username)
+    projects = ProjectPortfolio.objects.filter(owner=profile_user).prefetch_related('reviews__reviewer').order_by('-created_at')
+    
+    context = {
+        'profile_user': profile_user,
+        'projects': projects,
+    }
+    # Notice it uses a different template than the standard profile
+    return render(request, 'network/portfolio.html', context)
+@login_required
+def analytics_dashboard(request):
+    # Fetch everyone who viewed the current user, ordered by most recent
+    recent_views = ProfileView.objects.filter(viewed_user=request.user).order_by('-timestamp')
+    view_count = recent_views.count()
+    
+    context = {
+        'recent_views': recent_views,
+        'view_count': view_count,
+    }
+    return render(request, 'network/analytics.html', context)
+@login_required
+def inbox(request):
+    # Fetch all accepted connections so the user knows who they can message
+    connections = Connection.objects.filter(
+        Q(from_user=request.user, status='accepted') | 
+        Q(to_user=request.user, status='accepted')
+    )
+    
+    # Extract just the user objects we are connected to
+    chat_partners = []
+    for c in connections:
+        if c.from_user == request.user:
+            chat_partners.append(c.to_user)
+        else:
+            chat_partners.append(c.from_user)
+            
+    return render(request, 'network/inbox.html', {'chat_partners': chat_partners})
+
+@login_required
+def chat_view(request, username):
+    other_user = get_object_or_404(User, username=username)
+    
+    # Handle sending a new message
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content.strip():
+            Message.objects.create(sender=request.user, receiver=other_user, content=content)
+            return redirect('network:chat_view', username=username)
+            
+    # Fetch the conversation history between these two specific users
+    messages = Message.objects.filter(
+        Q(sender=request.user, receiver=other_user) | 
+        Q(sender=other_user, receiver=request.user)
+    )
+    
+    # Mark messages as read when the user opens the chat
+    messages.filter(receiver=request.user, is_read=False).update(is_read=True)
+    
+    return render(request, 'network/chat.html', {'other_user': other_user, 'messages': messages})
+def search_view(request):
+    query = request.GET.get('q', '')
+    user_results = []
+    job_results = []
+
+    if query:
+        # Search for Professionals (Matches name, headline, industry, or skills)
+        user_results = User.objects.filter(
+            Q(first_name__icontains=query) | 
+            Q(last_name__icontains=query) | 
+            Q(headline__icontains=query) | 
+            Q(industry__icontains=query) |
+            Q(core_skills__icontains=query)
+        ).distinct()
+
+        # Search for Jobs (Matches title, company, or required skills)
+        job_results = Job.objects.filter(
+            Q(title__icontains=query) | 
+            Q(company__icontains=query) | 
+            Q(required_skills__icontains=query),
+            is_active=True
+        ).distinct()
+
+    context = {
+        'query': query,
+        'user_results': user_results,
+        'job_results': job_results,
+    }
+    return render(request, 'network/search_results.html', context)

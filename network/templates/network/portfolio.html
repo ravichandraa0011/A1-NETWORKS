@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ profile_user.first_name }}'s Professional Portfolio</title>
+    <style>
+        /* Base Styling */
+        :root {
+            --primary: #2563eb;
+            --sidebar-bg: #1e293b;
+            --sidebar-text: #f8fafc;
+            --text-main: #334155;
+            --text-light: #64748b;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #e2e8f0;
+            margin: 0;
+            padding: 2rem;
+            color: var(--text-main);
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* A4 Page Setup & Two-Column Grid */
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: 32% 68%;
+            overflow: hidden;
+        }
+
+        /* Left Column: Sidebar */
+        .sidebar {
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            padding: 2.5rem 2rem;
+        }
+        .sidebar h2 {
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid #475569;
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .sidebar p { margin: 0.5rem 0; font-size: 0.95rem; line-height: 1.5; }
+
+        /* Right Column: Main Content */
+        .main-content {
+            padding: 3rem;
+            background-color: white;
+        }
+        .header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2.8rem;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+        .header h3 {
+            margin: 0 0 1.5rem 0;
+            font-size: 1.4rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        .verified-badge {
+            display: inline-block;
+            background: #d1fae5;
+            color: #065f46;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Projects & Reviews */
+        .project-item { margin-bottom: 2rem; }
+        .project-item h4 { margin: 0 0 0.25rem 0; font-size: 1.2rem; color: #0f172a; }
+        .project-item p { margin: 0 0 0.75rem 0; line-height: 1.6; }
+        
+        .review-box {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.25rem;
+            margin-top: 1rem;
+            border-radius: 0 4px 4px 0;
+        }
+        .review-text { font-style: italic; color: #475569; margin: 0 0 0.5rem 0; font-size: 0.95rem; }
+        .review-author { color: var(--primary); font-size: 0.85rem; font-weight: bold; margin: 0; }
+
+        /* Hide buttons when printing */
+        @media print {
+            body { padding: 0; background: white; }
+            .a4-page { box-shadow: none; width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div style="text-align: center; margin-bottom: 2rem;" class="no-print">
+        <button onclick="window.print()" style="padding: 1rem 2.5rem; background-color: #0f172a; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s;">
+            📥 Download Professional PDF
+        </button>
+        <p style="color: var(--text-light); margin-top: 0.5rem; font-size: 0.9rem;">(Ensure "Background graphics" is checked in the print menu for optimal styling)</p>
+    </div>
+
+    <div class="a4-page">
+        
+        <div class="sidebar">
+            <h2>Contact</h2>
+            <p>📧 {{ profile_user.email }}</p>
+            <p>🏢 {{ profile_user.industry }}</p>
+            
+            <h2>Education</h2>
+            <p>{{ profile_user.education|linebreaksbr|default:"Education details not provided." }}</p>
+
+            <h2>Core Competencies</h2>
+            <p>{{ profile_user.core_skills|linebreaksbr|default:"Skills not provided." }}</p>
+
+            <h2>Interests</h2>
+            <p>{{ profile_user.interests|linebreaksbr|default:"Interests not provided." }}</p>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1>{{ profile_user.first_name }}<br>{{ profile_user.last_name }}</h1>
+                <h3>{{ profile_user.headline|default:"Professional" }}</h3>
+                
+                {% if profile_user.is_industry_verified %}
+                    <div class="verified-badge">✓ Work Connect Authenticated Portfolio</div>
+                {% endif %}
+            </div>
+
+            <div class="section-title">Professional Summary</div>
+            <p style="line-height: 1.7;">A dedicated professional leveraging modern tools to build reliable solutions. Backed by authenticated peer reviews on the Work Connect platform to guarantee project integrity.</p>
+
+            <div class="section-title">Verified Project Portfolio</div>
+            
+            {% for project in projects %}
+                <div class="project-item">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                        <h4>{{ project.title }}</h4>
+                        {% if project.external_link %}
+                            <a href="{{ project.external_link }}" style="color: var(--text-light); text-decoration: none; font-size: 0.85rem;">🔗 View Source</a>
+                        {% endif %}
+                    </div>
+                    
+                    <p>{{ project.description }}</p>
+
+                    {% if project.reviews.all %}
+                        <div class="review-box">
+                            {% for review in project.reviews.all %}
+                                <p class="review-text">"{{ review.review_text }}"</p>
+                                <p class="review-author">— Authenticated Peer Review by {{ review.reviewer.first_name }} {{ review.reviewer.last_name }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p style="color: var(--text-light); font-style: italic;">Verified projects will populate here once added to the platform.</p>
+            {% endfor %}
+
+        </div>
+    </div>
+
+</body>
+</html>

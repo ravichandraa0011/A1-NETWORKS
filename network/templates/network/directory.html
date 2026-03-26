@@ -1,49 +1,55 @@
 {% extends 'network/base.html' %}
 
-{% block title %}Member Directory | NicheNetwork{% endblock %}
+{% block title %}Professional Directory | NicheNetwork{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 2rem;">
-    <h2>Community Directory</h2>
-    <p style="color: #6b7280;">Discover and connect with verified professionals in your niche.</p>
-    
-    <form method="GET" action="{% url 'network:directory' %}" style="display: flex; gap: 0.5rem; margin-top: 1rem; max-width: 500px;">
-        <input type="text" name="q" value="{{ query }}" placeholder="Search by name or headline..." 
-               style="flex: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 1rem;">
-        <button type="submit" style="padding: 0.75rem 1.5rem; background-color: #1f2937; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
-            Search
-        </button>
-        {% if query %}
-            <a href="{% url 'network:directory' %}" style="padding: 0.75rem 1rem; color: #6b7280; text-decoration: none; display: flex; align-items: center;">Clear</a>
-        {% endif %}
-    </form>
+<div style="margin-bottom: 2.5rem; text-align: center;">
+    <h1 style="color: #111827; margin-bottom: 0.5rem;">Professional Directory</h1>
+    <p style="color: #6b7280; font-size: 1.1rem;">Discover and connect with verified industry professionals.</p>
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem;">
-    {% for member in users %}
-        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
-            <h3 style="margin: 0 0 0.5rem 0;">
-                <a href="{% url 'network:profile' member.username %}" style="color: #111827; text-decoration: none;">
-                    {{ member.first_name }} {{ member.last_name }}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+    {% for u in users %}
+        {% if u != request.user %}
+            <div style="background: white; padding: 2rem 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); text-align: center; position: relative; border: 1px solid #e5e7eb;">
+                
+                {% if u.open_to_work %}
+                    <span style="position: absolute; top: 1rem; left: 1rem; background-color: #dbeafe; color: #1e40af; padding: 0.25rem 0.6rem; border-radius: 4px; font-weight: bold; font-size: 0.75rem; border: 1px solid #bfdbfe;">
+                        #OpenToWork
+                    </span>
+                {% endif %}
+
+                <img src="{% if u.profile_picture %}{{ u.profile_picture.url }}{% else %}/static/default_pic.png{% endif %}" alt="Profile" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 1rem; border: 4px solid #f3f4f6; background-color: #e2e8f0;">
+
+                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.25rem;">
+                    <a href="{% url 'network:profile' u.username %}" style="color: #111827; text-decoration: none;">
+                        {{ u.first_name }} {{ u.last_name }}
+                    </a>
+                    {% if u.is_industry_verified %}
+                        <span style="color: #059669; font-size: 1rem; vertical-align: middle;" title="Verified Professional">✓</span>
+                    {% endif %}
+                </h3>
+                
+                <p style="color: #4b5563; font-size: 0.95rem; margin: 0 0 1.5rem 0; height: 2.8rem; overflow: hidden;">
+                    {{ u.headline|default:"Engineering Professional" }}<br>
+                    <small style="color: #9ca3af;">{{ u.industry }}</small>
+                </p>
+
+                <a href="{% url 'network:profile' u.username %}" style="display: block; width: 100%; padding: 0.6rem 0; background-color: #f3f4f6; color: #374151; text-decoration: none; border-radius: 20px; font-weight: bold; font-size: 0.95rem; transition: background 0.2s;">
+                    View Profile
                 </a>
-            </h3>
-            
-            {% if member.is_industry_verified %}
-                <span style="color: #059669; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.5rem;">✓ Verified Professional</span>
-            {% endif %}
-            
-            <p style="color: #4b5563; font-size: 0.9rem; flex-grow: 1; margin: 0 0 1rem 0;">
-                {{ member.headline|default:"No headline provided" }}
-            </p>
-            
-            <a href="{% url 'network:profile' member.username %}" style="text-align: center; padding: 0.5rem; border: 1px solid #2563eb; color: #2563eb; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">
-                View Profile
-            </a>
-        </div>
+            </div>
+        {% endif %}
     {% empty %}
-        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: white; border-radius: 8px;">
-            <p style="color: #6b7280; font-size: 1.1rem;">No professionals found matching your search.</p>
-        </div>
+        <p style="text-align: center; color: #6b7280; grid-column: 1 / -1;">No professionals found in the directory yet.</p>
     {% endfor %}
 </div>
+
+<style>
+    /* Add a nice hover effect to the view profile buttons */
+    a[style*="background-color: #f3f4f6"]:hover {
+        background-color: #e5e7eb !important;
+        color: #111827 !important;
+    }
+</style>
 {% endblock %}

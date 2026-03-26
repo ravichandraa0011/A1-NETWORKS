@@ -1,0 +1,40 @@
+{% extends 'network/base.html' %}
+
+{% block title %}Profile Analytics | NicheNetwork{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    
+    <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 2rem; text-align: center; border-top: 4px solid #2563eb;">
+        <h2 style="margin: 0 0 0.5rem 0; color: #111827;">Profile Analytics</h2>
+        <p style="color: #6b7280; font-size: 1.1rem; margin: 0;">Your profile has been viewed <strong>{{ view_count }}</strong> times.</p>
+    </div>
+
+    <h3 style="color: #374151; margin-bottom: 1rem;">Recent Views</h3>
+    
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for view in recent_views %}
+            <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <img src="{% if view.viewer.profile_picture %}{{ view.viewer.profile_picture.url }}{% else %}/static/default_pic.png{% endif %}" alt="Pic" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; background-color: #e2e8f0;">
+                    <div>
+                        <h4 style="margin: 0 0 0.25rem 0; font-size: 1.1rem;">
+                            <a href="{% url 'network:profile' view.viewer.username %}" style="color: #111827; text-decoration: none;">
+                                {{ view.viewer.first_name }} {{ view.viewer.last_name }}
+                            </a>
+                        </h4>
+                        <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">{{ view.viewer.headline }}</p>
+                    </div>
+                </div>
+                <div style="text-align: right; color: #9ca3af; font-size: 0.85rem;">
+                    Viewed {{ view.timestamp|timesince }} ago
+                </div>
+            </div>
+        {% empty %}
+            <div style="text-align: center; padding: 3rem; background: white; border-radius: 8px;">
+                <p style="color: #6b7280; font-size: 1.1rem;">No one has viewed your profile yet. Try posting a project to get noticed!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

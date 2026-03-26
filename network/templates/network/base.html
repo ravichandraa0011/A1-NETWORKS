@@ -65,34 +65,41 @@
 <body>
 
     <!-- ✅ NAVBAR -->
-    <nav class="navbar">
-        <a href="/">NicheNetwork</a>
+    <nav style="background-color: #111827; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 50;">
+        <a href="{% url 'network:directory' %}" style="color: white; text-decoration: none; font-size: 1.5rem; font-weight: bold; display: flex; align-items: center; gap: 0.5rem;">
+            <span style="background: #2563eb; color: white; padding: 0.2rem 0.6rem; border-radius: 4px;">W</span> 
+            Work Connect
+        </a>
 
-        <div>
+        {% if user.is_authenticated %}
+        <form action="{% url 'network:search' %}" method="GET" style="flex: 1; max-width: 400px; margin: 0 2rem; display: flex;">
+            <input type="text" name="q" placeholder="Search professionals, skills, or jobs..." required style="width: 100%; padding: 0.5rem 1rem; border-radius: 20px; border: none; outline: none; background: #374151; color: white;">
+        </form>
+        {% endif %}
+
+        <div style="display: flex; align-items: center;">
+            <a href="{% url 'network:directory' %}" style="color: #d1d5db; text-decoration: none; font-weight: bold; margin-right: 1.5rem; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#d1d5db'">Directory</a>
+            
             {% if user.is_authenticated %}
-                <span style="margin-right: 15px;">
-                    Welcome, {{ user.first_name }}
-                </span>
-
-                <a href="{% url 'network:directory' %}" style="margin-right: 15px;">Directory</a>
-                <a href="{% url 'network:my_network' %}" style="margin-right: 15px;">My Network</a>
-                <a href="{% url 'network:profile' user.username %}" style="margin-right: 15px;">My Profile</a>
-
+                <a href="{% url 'jobs:job_list' %}" style="color: #d1d5db; text-decoration: none; font-weight: bold; margin-right: 1.5rem; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#d1d5db'">Jobs</a>
+                <a href="{% url 'network:my_network' %}" style="color: #d1d5db; text-decoration: none; font-weight: bold; margin-right: 1.5rem; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#d1d5db'">My Network</a>
+                <a href="{% url 'network:inbox' %}" style="color: #d1d5db; text-decoration: none; font-weight: bold; margin-right: 1.5rem; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#d1d5db'">Messages</a>
+                <a href="{% url 'network:analytics_dashboard' %}" style="color: #d1d5db; text-decoration: none; font-weight: bold; margin-right: 1.5rem; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#d1d5db'">Analytics</a>
+                
+                <div style="height: 24px; width: 1px; background-color: #4b5563; margin-right: 1.5rem;"></div> <a href="{% url 'network:profile' user.username %}" style="display: flex; align-items: center; gap: 0.5rem; color: white; text-decoration: none; font-weight: bold; margin-right: 1.5rem;">
+                    <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/static/default_pic.png{% endif %}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">
+                    Me
+                </a>
                 <form action="{% url 'accounts:logout' %}" method="post" style="display: inline;">
                     {% csrf_token %}
-                    <button type="submit"
-                        style="background: none; border: none; color: white; cursor: pointer; font-weight: bold;">
-                        Log Out
-                    </button>
+                    <button type="submit" style="background: none; border: none; color: #ef4444; font-weight: bold; cursor: pointer; padding: 0;">Logout</button>
                 </form>
-
             {% else %}
-                <a href="{% url 'accounts:login' %}" style="margin-right: 15px;">Log In</a>
-                <a href="{% url 'accounts:register' %}">Sign Up</a>
+                <a href="{% url 'accounts:login' %}" style="color: white; text-decoration: none; font-weight: bold; margin-right: 1.5rem;">Login</a>
+                <a href="{% url 'accounts:register' %}" style="padding: 0.5rem 1rem; background-color: #2563eb; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">Sign Up</a>
             {% endif %}
         </div>
     </nav>
-
     <!-- ✅ DJANGO MESSAGES -->
     {% if messages %}
         <div class="container" style="margin-top: 1rem;">

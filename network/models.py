@@ -1,7 +1,4 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
 from django.conf import settings
 
 class Connection(models.Model):
@@ -28,6 +25,7 @@ class Connection(models.Model):
     def __str__(self):
         return f"{self.from_user} -> {self.to_user} ({self.status})"
 
+
 class ProjectPortfolio(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='projects', on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
@@ -43,6 +41,7 @@ class ProjectPortfolio(models.Model):
     def __str__(self):
         return f"{self.title} by {self.owner.username}"
     
+
 class ProjectReview(models.Model):
     project = models.ForeignKey(ProjectPortfolio, related_name='reviews', on_delete=models.CASCADE)
     reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='given_reviews', on_delete=models.CASCADE)
@@ -62,3 +61,35 @@ class ProjectReview(models.Model):
 
     def __str__(self):
         return f"Review by {self.reviewer.username} on {self.project.title}"
+
+
+class ProfileView(models.Model):
+    # The person who is looking at the profile
+    viewer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='views_made')
+    
+    # The person whose profile is being looked at
+    viewed_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile_views')
+    
+    # When it happened (auto-updates to the latest view time)
+    timestamp = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        # This prevents spam. If I view your profile 10 times today, it only counts as 1 recent view.
+        unique_together = ('viewer', 'viewed_user')
+
+    def __str__(self):
+        return f"{self.viewer.username} viewed {self.viewed_user.username}"
+
+
+class Message(models.Model):
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sent_messages', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='received_messages', on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['timestamp']
+
+    def __str__(self):
+        return f"Message from {self.sender.username} to {self.receiver.username}"

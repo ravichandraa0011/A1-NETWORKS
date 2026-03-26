@@ -10,8 +10,10 @@ class CustomUserCreationForm(UserCreationForm):
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ('first_name', 'last_name', 'headline', 'industry')
-        widgets = {
-            'headline': forms.TextInput(attrs={'placeholder': 'e.g., Senior Renewables Engineer'}),
-            'industry': forms.TextInput(attrs={'placeholder': 'e.g., Clean Energy'}),
-        }
+        # Added the visual and pro fields to the end of this list
+        fields = (
+            'first_name', 'last_name', 'headline', 'industry', 
+            'education', 'core_skills', 'interests',
+            'profile_picture', 'banner_image', 'open_to_work', 
+            'github_link', 'portfolio_website'
+        )

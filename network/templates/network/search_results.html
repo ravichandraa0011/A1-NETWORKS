@@ -1,0 +1,42 @@
+{% extends 'network/base.html' %}
+
+{% block title %}Search Results for "{{ query }}" | NicheNetwork{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2 style="color: #111827; margin-bottom: 0.5rem;">Search Results for "<span style="color: #2563eb;">{{ query }}</span>"</h2>
+    <p style="color: #6b7280;">Found {{ user_results|length }} professionals and {{ job_results|length }} jobs.</p>
+</div>
+
+<h3 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; margin-bottom: 1.5rem;">Professionals</h3>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+    {% for u in user_results %}
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 1rem;">
+            <img src="{% if u.profile_picture %}{{ u.profile_picture.url }}{% else %}/static/default_pic.png{% endif %}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
+            <div>
+                <h4 style="margin: 0 0 0.25rem 0;">
+                    <a href="{% url 'network:profile' u.username %}" style="color: #111827; text-decoration: none;">{{ u.first_name }} {{ u.last_name }}</a>
+                </h4>
+                <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">{{ u.headline|default:"Professional" }}</p>
+            </div>
+        </div>
+    {% empty %}
+        <p style="color: #6b7280; font-style: italic; grid-column: 1 / -1;">No professionals matched your search.</p>
+    {% endfor %}
+</div>
+
+<h3 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; margin-bottom: 1.5rem;">Jobs</h3>
+<div style="display: flex; flex-direction: column; gap: 1rem;">
+    {% for job in job_results %}
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #10b981; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <h4 style="margin: 0 0 0.25rem 0; font-size: 1.2rem;">{{ job.title }}</h4>
+            <p style="margin: 0 0 0.5rem 0; color: #4b5563;">{{ job.company }} • {{ job.location }}</p>
+            {% if job.required_skills %}
+                <p style="margin: 0; font-size: 0.85rem; color: #2563eb; font-weight: bold;">Skills: {{ job.required_skills }}</p>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p style="color: #6b7280; font-style: italic;">No jobs matched your search.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -33,9 +33,6 @@
     <h2>My Connections</h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem;">
         {% for conn in active_connections %}
-            {% with peer=conn.from_user|yesno:request.user,conn.to_user,conn.from_user %}
-                {% if peer == request.user %}{% set peer = conn.to_user %}{% endif %} {% endwith %}
-            
             <div style="background: white; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #10b981; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                 {% if conn.from_user == request.user %}
                     <h3 style="margin-top: 0;"><a href="{% url 'network:profile' conn.to_user.username %}" style="color: #111827; text-decoration: none;">{{ conn.to_user.first_name }} {{ conn.to_user.last_name }}</a></h3>
@@ -80,13 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Smoothly remove the card from the UI
                     cardElement.style.transition = 'opacity 0.3s ease';
                     cardElement.style.opacity = '0';
                     setTimeout(() => cardElement.remove(), 300);
-                    
-                    // Optional: If accepted, you could append it to the "My Connections" grid dynamically, 
-                    // but for MVP, requiring a refresh to see it down below is perfectly fine.
                 } else {
                     alert(data.error || 'Something went wrong.');
                     cardButtons.forEach(btn => btn.disabled = false);

@@ -1,0 +1,65 @@
+{% extends 'network/base.html' %}
+
+{% block title %}Job Board | NicheNetwork{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Industry Job Board</h2>
+    {% if user.is_authenticated %}
+        <a href="{% url 'jobs:post_job' %}" style="padding: 0.75rem 1.5rem; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+            + Post a Job
+        </a>
+    {% endif %}
+</div>
+
+{% if user.is_authenticated and recommended_jobs %}
+    <div style="background: linear-gradient(to right, #1e293b, #0f172a); padding: 2rem; border-radius: 12px; margin-bottom: 3rem; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0 0 1.5rem 0; font-size: 1.3rem; color: #fbbf24;">✨ Recommended based on your Profile</h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+            {% for job in recommended_jobs %}
+                <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #fbbf24;">
+                    <h4 style="margin: 0 0 0.5rem 0; font-size: 1.2rem;">{{ job.title }}</h4>
+                    <p style="margin: 0 0 1rem 0; color: #cbd5e1; font-size: 0.9rem;">{{ job.company }} • {{ job.location }}</p>
+                    <a href="mailto:{{ job.posted_by.email }}?subject=Application for {{ job.title }} role via Work Connect" style="color: #fbbf24; text-decoration: none; font-weight: bold; font-size: 0.9rem;">Fast Apply &rarr;</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+<div style="display: flex; flex-direction: column; gap: 1.5rem;">
+    {% for job in jobs %}
+        <div style="background: white; padding: 2rem; border-radius: 8px; border-left: 5px solid #10b981; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h3 style="margin: 0 0 0.5rem 0; color: #111827; font-size: 1.5rem;">{{ job.title }}</h3>
+                    <h4 style="margin: 0 0 1rem 0; color: #4b5563; font-weight: normal;">{{ job.company }} • {{ job.location }}</h4>
+                </div>
+                {% if job.salary_range %}
+                    <span style="background: #f3f4f6; color: #374151; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem;">
+                        {{ job.salary_range }}
+                    </span>
+                {% endif %}
+            </div>
+            {% if job.required_skills %}
+                <div style="margin-bottom: 1rem;">
+                    <span style="font-size: 0.85rem; color: #6b7280; font-weight: bold; text-transform: uppercase;">Required Skills:</span><br>
+                    <span style="color: #2563eb; font-weight: 500;">{{ job.required_skills }}</span>
+                </div>
+            {% endif %}
+                        
+            <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem;">{{ job.description|linebreaksbr }}</p>
+            
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem; font-size: 0.9rem; color: #6b7280; display: flex; justify-content: space-between;">
+                <span>Posted {{ job.created_at|timesince }} ago by <a href="{% url 'network:profile' job.posted_by.username %}" style="color: #2563eb; text-decoration: none; font-weight: bold;">{{ job.posted_by.first_name }} {{ job.posted_by.last_name }}</a></span>
+                <a href="mailto:{{ job.posted_by.email }}?subject=Application for {{ job.title }} role via Work Connect" style="color: #059669; font-weight: bold; text-decoration: none;">Apply via Email &rarr;</a>
+            </div>
+        </div>
+    {% empty %}
+        <div style="text-align: center; padding: 3rem; background: white; border-radius: 8px;">
+            <p style="color: #6b7280; font-size: 1.1rem;">No jobs posted yet. Be the first to post an opportunity!</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

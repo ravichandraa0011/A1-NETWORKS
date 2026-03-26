@@ -4,36 +4,65 @@
 
 {% block content %}
 {% csrf_token %}
-<div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; position: relative;">
+<div style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; overflow: hidden; position: relative;">
+    
+    <div style="height: 200px; width: 100%; background-image: url('{% if profile_user.banner_image %}{{ profile_user.banner_image.url }}{% else %}/static/default_banner.jpg{% endif %}'); background-size: cover; background-position: center; background-color: #cbd5e1;"></div>
     
     {% if request.user == profile_user %}
-        <a href="{% url 'accounts:edit_profile' %}" style="position: absolute; top: 2rem; right: 2rem; padding: 0.5rem 1rem; background-color: #f3f4f6; color: #374151; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.9rem; border: 1px solid #d1d5db;">
+        <a href="{% url 'accounts:edit_profile' %}" style="position: absolute; top: 1rem; right: 1rem; padding: 0.5rem 1rem; background-color: rgba(255,255,255,0.9); color: #374151; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.9rem; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
             ✎ Edit Profile
         </a>
     {% endif %}
 
-    <h1 style="margin-top: 0;">
-        {{ profile_user.first_name }} {{ profile_user.last_name }}
-        {% if profile_user.is_industry_verified %}
-            <span style="color: #059669; font-size: 0.9rem;">✓ Verified Professional</span>
-        {% endif %}
-    </h1>
-    <h3 style="color: #4b5563;">{{ profile_user.headline|default:"Professional in the Industry" }}</h3>
-
-    {% if user.is_authenticated and user != profile_user %}
-        <button id="connect-btn" 
-                data-username="{{ profile_user.username }}" 
-                data-status="{{ connection_status|default:'none' }}"
-                style="padding: 0.5rem 1rem; background-color: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+    <div style="padding: 0 2rem 2rem 2rem;">
+        <div style="margin-top: -60px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-end;">
+            <img src="{% if profile_user.profile_picture %}{{ profile_user.profile_picture.url }}{% else %}/static/default_pic.png{% endif %}" alt="Profile Picture" style="width: 140px; height: 140px; border-radius: 50%; border: 4px solid white; object-fit: cover; background-color: #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
             
-            {% if connection_status == 'pending' %} Request Pending
-            {% elif connection_status == 'accepted' %} Connected
-            {% else %} Connect
+            {% if user.is_authenticated and user != profile_user %}
+                <button id="connect-btn" 
+                        data-username="{{ profile_user.username }}" 
+                        data-status="{{ connection_status|default:'none' }}"
+                        style="padding: 0.5rem 1.5rem; background-color: #2563eb; color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 1rem; margin-bottom: 1rem;">
+                    {% if connection_status == 'pending' %} Request Pending
+                    {% elif connection_status == 'accepted' %} ✓ Connected
+                    {% else %} + Connect
+                    {% endif %}
+                </button>
             {% endif %}
-        </button>
-    {% endif %}
-</div>
+        </div>
 
+        <h1 style="margin: 0; font-size: 1.8rem; color: #111827;">
+            {{ profile_user.first_name }} {{ profile_user.last_name }}
+            {% if profile_user.is_industry_verified %}
+                <span style="color: #059669; font-size: 1rem; vertical-align: middle;">✓ Verified</span>
+            {% endif %}
+        </h1>
+        
+        <h3 style="margin: 0.25rem 0 1rem 0; color: #4b5563; font-weight: normal; font-size: 1.1rem;">
+            {{ profile_user.headline|default:"Professional in the Industry" }}
+        </h3>
+
+        {% if profile_user.open_to_work %}
+            <div style="display: inline-block; background-color: #dbeafe; color: #1e40af; padding: 0.25rem 0.75rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem; margin-bottom: 1rem; border: 1px solid #bfdbfe;">
+                #OpenToWork
+            </div>
+        {% endif %}
+
+        <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+            <a href="{% url 'network:portfolio_maker' profile_user.username %}" target="_blank" style="color: #111827; text-decoration: none; font-weight: bold; font-size: 0.95rem;">📄 Generate PDF Resume</a>
+            
+            {% if profile_user.github_link %}
+                <span style="color: #d1d5db;">|</span>
+                <a href="{{ profile_user.github_link }}" target="_blank" style="color: #2563eb; text-decoration: none; font-weight: bold; font-size: 0.95rem;">GitHub Profile &rarr;</a>
+            {% endif %}
+            
+            {% if profile_user.portfolio_website %}
+                <span style="color: #d1d5db;">|</span>
+                <a href="{{ profile_user.portfolio_website }}" target="_blank" style="color: #2563eb; text-decoration: none; font-weight: bold; font-size: 0.95rem;">Personal Website &rarr;</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
     <h2>Verified Project Portfolio</h2>
     
@@ -74,10 +103,7 @@
                 </div>
             {% endif %}
         </div>
-    {% empty %}
-        <p style="color: #6b7280;">No verified projects added yet.</p>
-    {% endfor %}
-</div>
+    
     {% empty %}
         <p style="color: #6b7280;">No verified projects added yet.</p>
     {% endfor %}

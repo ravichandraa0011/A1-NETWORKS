@@ -3,7 +3,6 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, UserEditForm
 from django.contrib import messages
-from django.contrib import messages # Import this at the top
 
 @login_required
 def edit_profile(request):
@@ -33,11 +32,11 @@ def register(request):
         form = CustomUserCreationForm()
         
     return render(request, 'accounts/register.html', {'form': form})
-
 @login_required
 def edit_profile(request):
     if request.method == 'POST':
-        form = UserEditForm(request.POST, instance=request.user)
+        # CRITICAL: Added request.FILES so images actually save!
+        form = UserEditForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
             return redirect('network:profile', username=request.user.username)
