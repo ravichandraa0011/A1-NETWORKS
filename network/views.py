@@ -1,86 +1,305 @@
 import json
+import re
+from google import genai 
+from django.conf import settings
 from django.db.models import Q
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import ProjectPortfolio, Connection, ProjectReview 
-from .forms import ProjectForm# Added ProjectReview
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from .models import Connection, ProjectPortfolio, ProjectReview, ProfileView
-from .models import Connection, ProjectPortfolio, ProjectReview, ProfileView, Message
-from jobs.models import Job
+from django.db.models import Sum
+# Import your network models
+from .models import (
+    ProjectPortfolio, Connection, ProjectReview, 
+    ProfileView, Message, Post, Comment, 
+    TopicGroup, GroupMessage
+)
+from .forms import ProjectForm
+
+# Import the Job models from your jobs app
+from jobs.models import Job, JobApplication
 
 User = get_user_model()
+
+# ─── FEED & POSTS ───────────────────────────────────────
+@login_required
+def feed(request):
+    # 1. Fetch Job Data for the new Home Page UI
+    latest_jobs = Job.objects.filter(is_active=True).exclude(posted_by=request.user).order_by('-created_at')[:5]
+    
+    pending_applications = JobApplication.objects.filter(
+        job__posted_by=request.user, 
+        status='pending'
+    ).order_by('-created_at')
+
+    # 2. Handle New Posts and Hashtags
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content:
+            post = Post.objects.create(author=request.user, content=content)
+            
+            # ─── THE HASHTAG MAGIC ───
+            hashtags = re.findall(r'#(\w+)', content)
+            for tag in hashtags:
+                # Find the group, or auto-create it if it's brand new
+                group = TopicGroup.objects.filter(name__iexact=tag).first()
+                if not group:
+                    group = TopicGroup.objects.create(
+                        name=tag, 
+                        description=f"Community driven discussion about #{tag}"
+                    )
+                # Auto-join the user to the group
+                if request.user not in group.members.all():
+                    group.members.add(request.user)
+                    
+            return redirect('network:feed')
+    
+    # 3. Fetch Posts and Update Views
+    posts = Post.objects.all().order_by('-created_at')
+    for post in posts:
+        post.views += 1
+        post.save()
+
+    # THE FIX: We must pass the job data into the context dictionary!
+    context = {
+        'posts': posts,
+        'latest_jobs': latest_jobs,
+        'pending_applications': pending_applications,
+    }
+    return render(request, 'network/feed.html', context)
+
+@login_required
+def like_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if request.user in post.likes.all():
+        post.likes.remove(request.user)
+    else:
+        post.likes.add(request.user)
+    return redirect('network:feed')
+@login_required
+def delete_post(request, post_id):
+    # 1. Find the post
+    post = get_object_or_404(Post, id=post_id)
+    
+    # 2. SECURITY CHECK: Ensure the person clicking delete actually owns the post!
+    if post.author == request.user:
+        post.delete()
+        
+    # 3. Send them back to the feed
+    return redirect('network:feed')
+
+@login_required
+def add_comment(request, post_id):
+    if request.method == 'POST':
+        post = get_object_or_404(Post, id=post_id)
+        content = request.POST.get('content')
+        if content:
+            Comment.objects.create(post=post, author=request.user, content=content)
+    return redirect('network:feed')
+
+
+# ─── CONNECTIONS & NETWORK ─────────────────────────────
 @login_required
 def my_network(request):
-    # 1. Incoming requests waiting for the user's approval
-    pending_requests = Connection.objects.filter(
-        to_user=request.user, 
-        status='pending'
-    ).select_related('from_user')
-
-    # 2. Active connections (where the user is either the sender or receiver)
-    active_connections = Connection.objects.filter(
-        (Q(from_user=request.user) | Q(to_user=request.user)),
-        status='accepted'
-    ).select_related('from_user', 'to_user')
+    # Pending incoming invites
+    pending_invites = Connection.objects.filter(receiver=request.user, is_accepted=False).order_by('-created_at')
+    
+    # Established connections
+    connections_records = Connection.objects.filter(
+        (Q(sender=request.user) | Q(receiver=request.user)), 
+        is_accepted=True
+    )
+    
+    connected_users = []
+    for conn in connections_records:
+        connected_users.append(conn.receiver if conn.sender == request.user else conn.sender)
 
     context = {
-        'pending_requests': pending_requests,
-        'active_connections': active_connections,
+        'pending_invites': pending_invites,
+        'connected_users': connected_users,
+        'invite_count': pending_invites.count(),
     }
     return render(request, 'network/my_network.html', context)
 
-@require_POST
 @login_required
-def update_connection(request, connection_id):
-    # Security check: Ensure the connection exists, is pending, AND the logged-in user is the receiver
-    connection = get_object_or_404(Connection, id=connection_id, to_user=request.user, status='pending')
-    
-    try:
-        data = json.loads(request.body)
-        action = data.get('action')
-
-        if action == 'accept':
-            connection.status = 'accepted'
-            connection.save()
-            return JsonResponse({'status': 'accepted'})
-        elif action == 'decline':
-            # We can either delete it or mark it declined. Deleting keeps the DB cleaner for MVP.
-            connection.delete() 
-            return JsonResponse({'status': 'declined'})
+def send_request(request, username):
+    if request.method == 'POST':
+        target_user = get_object_or_404(User, username=username)
+        if target_user != request.user:
+            already_exists = Connection.objects.filter(
+                (Q(sender=request.user, receiver=target_user) | Q(sender=target_user, receiver=request.user))
+            ).exists()
             
-        return JsonResponse({'error': 'Invalid action'}, status=400)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+            if not already_exists:
+                Connection.objects.create(sender=request.user, receiver=target_user, is_accepted=False)
+    return redirect('network:directory')
 
+@login_required
+def accept_request(request, connection_id):
+    if request.method == 'POST':
+        connection = get_object_or_404(Connection, id=connection_id, receiver=request.user, is_accepted=False)
+        connection.is_accepted = True
+        connection.save()
+    return redirect('network:my_network')
+
+@login_required
+def ignore_request(request, connection_id):
+    if request.method == 'POST':
+        connection = get_object_or_404(Connection, id=connection_id, receiver=request.user, is_accepted=False)
+        connection.delete()
+    return redirect('network:my_network')
+
+
+# ─── DIRECT MESSAGING ──────────────────────────────────
+@login_required
+def inbox(request, username=None):
+    # List of connected users to chat with
+    connections = Connection.objects.filter(
+        (Q(sender=request.user) | Q(receiver=request.user)) & Q(is_accepted=True)
+    )
+    contacts = [conn.receiver if conn.sender == request.user else conn.sender for conn in connections]
+
+    active_contact = None
+    messages = []
+
+    if username:
+        active_contact = get_object_or_404(User, username=username)
+        messages = Message.objects.filter(
+            (Q(sender=request.user) & Q(receiver=active_contact)) |
+            (Q(sender=active_contact) & Q(receiver=request.user))
+        ).order_by('timestamp')
+        messages.filter(receiver=request.user).update(is_read=True)
+
+    if request.method == 'POST' and active_contact:
+        content = request.POST.get('content')
+        if content:
+            Message.objects.create(sender=request.user, receiver=active_contact, content=content)
+            return redirect('network:inbox_chat', username=active_contact.username)
+
+    return render(request, 'network/inbox.html', {
+        'contacts': contacts,
+        'active_contact': active_contact,
+        'messages': messages,
+    })
+
+
+# ─── DIRECTORY & PROFILE ──────────────────────────────
 @login_required
 def directory(request):
-    # Get the search query from the URL (e.g., ?q=engineer)
     query = request.GET.get('q', '')
     
-    # Start with all active users, excluding the current logged-in user
-    users = User.objects.filter(is_active=True).exclude(id=request.user.id)
+    # Hide admin accounts
+    users = User.objects.filter(
+        is_active=True, 
+        is_superuser=False
+    ).exclude(id=request.user.id)
     
     if query:
-        # Filter users based on first name, last name, or headline
         users = users.filter(
-            Q(first_name__icontains=query) | 
-            Q(last_name__icontains=query) | 
-            Q(headline__icontains=query)
+            Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(headline__icontains=query)
         )
     
-    # Order by verified users first, then alphabetically
-    users = users.order_by('-is_industry_verified', 'first_name')
+    my_connections = Connection.objects.filter(
+        Q(sender=request.user) | Q(receiver=request.user)
+    )
+    
+    connected_users = []
+    pending_users = []
+    
+    for conn in my_connections:
+        other_user = conn.receiver if conn.sender == request.user else conn.sender
+        if conn.is_accepted:
+            connected_users.append(other_user)
+        else:
+            pending_users.append(other_user)
 
+    users = users.order_by('first_name')
+    
     context = {
         'users': users,
         'query': query,
+        'connected_users': connected_users,
+        'pending_users': pending_users,
     }
     return render(request, 'network/directory.html', context)
 
+@login_required
+def profile_view(request, username):
+    # Get the user whose profile we are looking at
+    profile_user = get_object_or_404(User, username=username)
+    
+    # 1. Handle Connection Status (Your existing code)
+    connection = Connection.objects.filter(
+        (Q(sender=request.user) & Q(receiver=profile_user)) | 
+        (Q(sender=profile_user) & Q(receiver=request.user))
+    ).first()
+
+    connection_status = None
+    if connection:
+        if connection.is_accepted:
+            connection_status = 'accepted'
+        else:
+            connection_status = 'sent' if connection.sender == request.user else 'received'
+
+    # 2. NEW: Fetch this specific user's Posts and Active Jobs
+    user_posts = Post.objects.filter(author=profile_user).order_by('-created_at')
+    
+    # We only want to show jobs that are currently active!
+    user_jobs = Job.objects.filter(posted_by=profile_user, is_active=True).order_by('-created_at')
+
+    # 3. Pass everything to the template
+    context = {
+        'profile_user': profile_user,
+        'connection_status': connection_status,
+        'connection': connection,
+        'user_posts': user_posts, 
+        'user_jobs': user_jobs,   
+    }
+    return render(request, 'network/profile.html', context)
+# ─── GROUPS ───────────────────────────────────────────
+@login_required
+def topic_groups(request):
+    query = request.GET.get('q', '')
+    if query:
+        groups = TopicGroup.objects.filter(name__icontains=query)
+    else:
+        groups = TopicGroup.objects.all()
+        
+    return render(request, 'network/groups.html', {'groups': groups, 'query': query})
+
+@login_required
+def group_detail(request, group_id):
+    group = get_object_or_404(TopicGroup, id=group_id)
+    
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content:
+            # If user posts from inside the group, automatically append the hashtag
+            if f"#{group.name.lower()}" not in content.lower():
+                content += f" #{group.name}"
+                
+            Post.objects.create(author=request.user, content=content)
+            
+            if request.user not in group.members.all():
+                group.members.add(request.user)
+        return redirect('network:group_detail', group_id=group.id)
+    
+    # Fetch normal Feed Posts that contain this specific hashtag
+    messages = Post.objects.filter(content__icontains=f"#{group.name}").order_by('-created_at')
+    
+    return render(request, 'network/group_detail.html', {'group': group, 'messages': messages})
+
+@login_required
+def group_by_tag(request, hashtag):
+    # This catches clicks on hashtags and sends the user to the right group
+    group = TopicGroup.objects.filter(name__iexact=hashtag).first()
+    if not group:
+        group = TopicGroup.objects.create(name=hashtag, description=f"Community driven discussion about #{hashtag}")
+    return redirect('network:group_detail', group_id=group.id)
+
+
+# ─── PORTFOLIO & REVIEWS ─────────────────────────────
 @login_required
 def add_project(request):
     if request.method == 'POST':
@@ -95,190 +314,74 @@ def add_project(request):
     return render(request, 'network/add_project.html', {'form': form})
 
 @login_required
-@require_POST
-def handle_connection(request, username):
-    target_user = get_object_or_404(User, username=username)
-    
-    if request.user == target_user:
-        return JsonResponse({'error': 'Cannot connect with yourself'}, status=400)
-
-    connection = Connection.objects.filter(
-        (Q(from_user=request.user) & Q(to_user=target_user)) |
-        (Q(from_user=target_user) & Q(to_user=request.user))
-    ).first()
-
-    if not connection:
-        Connection.objects.create(from_user=request.user, to_user=target_user, status='pending')
-        return JsonResponse({'status': 'pending', 'action': 'created'})
-
-    connection.delete()
-    return JsonResponse({'status': 'none', 'action': 'deleted'})
-
-@login_required
-def profile_view(request, username):
-    profile_user = get_object_or_404(User, username=username)
-    
-    # --- NEW: TRACK THE PROFILE VIEW ---
-    if request.user != profile_user:
-        ProfileView.objects.update_or_create(
-            viewer=request.user,
-            viewed_user=profile_user,
-            defaults={'timestamp': timezone.now()}
-        )
-    # -----------------------------------
-
-    # ... (Keep the rest of your profile_view logic exactly the same below this) ...
-    
-    # OPTIMIZED: We added prefetch_related to load reviews efficiently
-    projects = ProjectPortfolio.objects.filter(owner=profile_user).prefetch_related('reviews__reviewer').order_by('-created_at')
-    
-    connection_status = None
-    if request.user.is_authenticated and request.user != profile_user:
-        connection = Connection.objects.filter(
-            from_user__in=[request.user, profile_user],
-            to_user__in=[request.user, profile_user]
-        ).first()
-        if connection:
-            connection_status = connection.status
-
-    context = {
-        'profile_user': profile_user,
-        'projects': projects,
-        'connection_status': connection_status,
-    }
-    return render(request, 'network/profile.html', context)
-
-
-@require_POST
-@login_required
-def add_project_review(request, project_id):
-    project = get_object_or_404(ProjectPortfolio, id=project_id)
-
-    # 1. Prevent self-reviewing
-    if project.owner == request.user:
-        return JsonResponse({'error': 'You cannot review your own project.'}, status=400)
-
-    # 2. Security Check: Are they actually connected?
-    is_connected = Connection.objects.filter(
-        (Q(from_user=request.user, to_user=project.owner) | Q(from_user=project.owner, to_user=request.user)),
-        status='accepted'
-    ).exists()
-
-    if not is_connected:
-        return JsonResponse({'error': 'You must be an accepted connection to leave a peer review.'}, status=403)
-
-    try:
-        data = json.loads(request.body)
-        review_text = data.get('review_text', '').strip()
-
-        if not review_text:
-            return JsonResponse({'error': 'Review text cannot be empty.'}, status=400)
-
-        # 3. Create the review (get_or_create prevents duplicates)
-        review, created = ProjectReview.objects.get_or_create(
-            project=project,
-            reviewer=request.user,
-            defaults={'review_text': review_text}
-        )
-
-        if not created:
-            return JsonResponse({'error': 'You have already reviewed this project.'}, status=400)
-
-        return JsonResponse({
-            'status': 'success',
-            'reviewer_name': f"{request.user.first_name} {request.user.last_name}",
-            'review_text': review_text
-        })
-
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid data format.'}, status=400)
 def portfolio_maker(request, username):
-    # Fetch the user and their verified projects
     profile_user = get_object_or_404(User, username=username)
     projects = ProjectPortfolio.objects.filter(owner=profile_user).prefetch_related('reviews__reviewer').order_by('-created_at')
-    
-    context = {
-        'profile_user': profile_user,
-        'projects': projects,
-    }
-    # Notice it uses a different template than the standard profile
-    return render(request, 'network/portfolio.html', context)
+    return render(request, 'network/portfolio.html', {'profile_user': profile_user, 'projects': projects})
+
 @login_required
 def analytics_dashboard(request):
-    # Fetch everyone who viewed the current user, ordered by most recent
     recent_views = ProfileView.objects.filter(viewed_user=request.user).order_by('-timestamp')
-    view_count = recent_views.count()
+    return render(request, 'network/analytics.html', {'recent_views': recent_views, 'view_count': recent_views.count()})
+
+
+# ─── AI CHATBOT ───────────────────────────────────────
+@login_required
+def chatbot_response(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user_msg = data.get('message', '').strip()
+            
+            client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
+            models_to_try = [
+                'gemini-2.5-flash-lite', 
+                'gemini-2.5-flash',
+                'gemini-flash-latest',
+                'gemini-3.1-flash-lite-preview'
+            ]
+            
+            response_text = None
+            
+            for model_name in models_to_try:
+                try:
+                    response = client.models.generate_content(
+                        model=model_name,
+                     contents=f"You are the A1 Networks Assistant. User {request.user.first_name} says: {user_msg}"                    )
+                    if response and response.text:
+                        response_text = response.text
+                        print(f"--- SUCCESS: Connected via {model_name} ---")
+                        break
+                except Exception as model_err:
+                    print(f"--- {model_name} failed: {str(model_err)[:50]}... ---")
+                    continue
+
+            if not response_text:
+                if "group" in user_msg.lower():
+                    response_text = "To create a group, just use a #hashtag in your Feed! Our system auto-generates the community page."
+                else:
+                    response_text = "I'm currently in 'Local Assistant' mode while the Gemini 2.5 API resets its quota. How can I help?"
+
+            return JsonResponse({'reply': response_text})
+
+        except Exception as e:
+            print(f"--- SYSTEM ERROR: {e} ---")
+            return JsonResponse({'reply': "Rebooting my AI brain. Please try again in 10 seconds!"})
+
+    return JsonResponse({'error': 'POST only'}, status=400)
+@login_required
+def analytics_dashboard(request):
+    # 1. Real Profile Views
+    recent_views = ProfileView.objects.filter(viewed_user=request.user).order_by('-timestamp')
     
+    # 2. Real Post Impressions (Adds up the 'views' counter on every post this user has made)
+    # The 'or 0' prevents an error if the user hasn't made any posts yet
+    total_post_views = Post.objects.filter(author=request.user).aggregate(Sum('views'))['views__sum'] or 0
+
     context = {
-        'recent_views': recent_views,
-        'view_count': view_count,
+        'recent_views': recent_views, 
+        'view_count': recent_views.count(),
+        'total_post_views': total_post_views, # Pass the real number to HTML
     }
     return render(request, 'network/analytics.html', context)
-@login_required
-def inbox(request):
-    # Fetch all accepted connections so the user knows who they can message
-    connections = Connection.objects.filter(
-        Q(from_user=request.user, status='accepted') | 
-        Q(to_user=request.user, status='accepted')
-    )
-    
-    # Extract just the user objects we are connected to
-    chat_partners = []
-    for c in connections:
-        if c.from_user == request.user:
-            chat_partners.append(c.to_user)
-        else:
-            chat_partners.append(c.from_user)
-            
-    return render(request, 'network/inbox.html', {'chat_partners': chat_partners})
-
-@login_required
-def chat_view(request, username):
-    other_user = get_object_or_404(User, username=username)
-    
-    # Handle sending a new message
-    if request.method == 'POST':
-        content = request.POST.get('content')
-        if content.strip():
-            Message.objects.create(sender=request.user, receiver=other_user, content=content)
-            return redirect('network:chat_view', username=username)
-            
-    # Fetch the conversation history between these two specific users
-    messages = Message.objects.filter(
-        Q(sender=request.user, receiver=other_user) | 
-        Q(sender=other_user, receiver=request.user)
-    )
-    
-    # Mark messages as read when the user opens the chat
-    messages.filter(receiver=request.user, is_read=False).update(is_read=True)
-    
-    return render(request, 'network/chat.html', {'other_user': other_user, 'messages': messages})
-def search_view(request):
-    query = request.GET.get('q', '')
-    user_results = []
-    job_results = []
-
-    if query:
-        # Search for Professionals (Matches name, headline, industry, or skills)
-        user_results = User.objects.filter(
-            Q(first_name__icontains=query) | 
-            Q(last_name__icontains=query) | 
-            Q(headline__icontains=query) | 
-            Q(industry__icontains=query) |
-            Q(core_skills__icontains=query)
-        ).distinct()
-
-        # Search for Jobs (Matches title, company, or required skills)
-        job_results = Job.objects.filter(
-            Q(title__icontains=query) | 
-            Q(company__icontains=query) | 
-            Q(required_skills__icontains=query),
-            is_active=True
-        ).distinct()
-
-    context = {
-        'query': query,
-        'user_results': user_results,
-        'job_results': job_results,
-    }
-    return render(request, 'network/search_results.html', context)

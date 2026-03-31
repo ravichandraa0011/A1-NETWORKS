@@ -1,28 +1,88 @@
 {% extends 'network/base.html' %}
 
-{% block title %}Messages | NicheNetwork{% endblock %}
-
 {% block content %}
-<div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 2.5rem;">
-    <h2 style="margin-top: 0; color: #111827; border-bottom: 2px solid #f3f4f6; padding-bottom: 1rem;">Direct Messages</h2>
-    
-    <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
-        {% for partner in chat_partners %}
-            <a href="{% url 'network:chat_view' partner.username %}" style="display: flex; align-items: center; gap: 1.25rem; text-decoration: none; color: inherit; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#2563eb'; this.style.backgroundColor='#f8fafc';" onmouseout="this.style.borderColor='#e5e7eb'; this.style.backgroundColor='transparent';">
-                
-                <img src="{% if partner.profile_picture %}{{ partner.profile_picture.url }}{% else %}/static/default_pic.png{% endif %}" alt="Profile" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; background-color: #e2e8f0;">
-                
-                <div>
-                    <h4 style="margin: 0 0 0.25rem 0; font-size: 1.1rem; color: #111827;">{{ partner.first_name }} {{ partner.last_name }}</h4>
-                    <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">{{ partner.headline|default:"Professional" }}</p>
+<div style="display: flex; gap: 20px; height: 80vh; max-width: 1200px; margin: 0 auto;">
+
+    <div class="glass-card" style="width: 30%; display: flex; flex-direction: column; padding: 20px; height: 100%;">
+        <h2 class="glass-title" style="font-size: 1.1rem; margin-bottom: 20px;">My Connections</h2>
+        
+        <div style="flex-grow: 1; overflow-y: auto; padding-right: 5px;">
+            {% for contact in contacts %}
+            <a href="{% url 'network:inbox_chat' contact.username %}" style="text-decoration: none;">
+                <div style="background: {% if active_contact == contact %}rgba(245, 158, 11, 0.08){% else %}transparent{% endif %}; border: 1px solid {% if active_contact == contact %}var(--primary){% else %}var(--border-light){% endif %}; border-radius: 12px; padding: 12px; display: flex; gap: 12px; align-items: center; margin-bottom: 10px; transition: all 0.2s ease;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 0.9rem;">
+                        {{ contact.first_name|first }}{{ contact.last_name|first }}
+                    </div>
+                    <div style="overflow: hidden;">
+                        <h4 style="color: var(--text-dark); font-size: 0.95rem; font-weight: 600; margin: 0;">{{ contact.first_name }} {{ contact.last_name }}</h4>
+                        <p style="color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; margin-top: 2px;">{{ contact.headline|default:"Professional" }}</p>
+                    
+                    </div>
                 </div>
             </a>
-        {% empty %}
-            <div style="text-align: center; padding: 2rem;">
-                <p style="color: #6b7280; font-size: 1.1rem;">You don't have any connections to message yet.</p>
-                <a href="{% url 'network:directory' %}" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1.5rem; background-color: #111827; color: white; text-decoration: none; border-radius: 20px; font-weight: bold;">Find Professionals</a>
+            {% empty %}
+            <p style="color: var(--text-muted); font-style: italic; text-align: center; font-size: 0.9rem;">No connections found.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="glass-card" style="width: 70%; display: flex; flex-direction: column; padding: 0; height: 100%; overflow: hidden;">
+        
+        {% if active_contact %}
+            <div style="padding: 20px; border-bottom: 1px solid var(--border-light); background: rgba(255,255,255,0.5);">
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div style="width: 45px; height: 45px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 1.1rem;">
+                        {{ active_contact.first_name|first }}
+                    </div>
+                    <h3 style="color: var(--text-dark); font-size: 1.1rem; margin: 0; font-weight: 700;">{{ active_contact.first_name }} {{ active_contact.last_name }}</h3>
+                </div>
             </div>
-        {% endfor %}
+
+            <div id="chat-box" style="flex-grow: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 15px; background: #fafaf9;">
+                {% for msg in messages %}
+                    
+                    <div class="{% if msg.sender == request.user %}message-sent{% else %}message-received{% endif %}" style="align-self: {% if msg.sender == request.user %}flex-end{% else %}flex-start{% endif %};">
+                        <p style="margin: 0; font-weight: 500;">{{ msg.content }}</p>
+                        <span class="message-time">{{ msg.timestamp|time:"H:i" }}</span>
+                    </div>
+
+                {% endfor %}
+            </div>
+
+            <form method="POST" style="padding: 20px; border-top: 1px solid var(--border-light); background: #ffffff; display: flex; gap: 15px; align-items: center;">
+                {% csrf_token %}
+                <input type="text" name="content" placeholder="Type a message..." required autocomplete="off" style="flex-grow: 1; border-radius: 30px; margin: 0;">
+                <button type="submit" class="glass-btn" style="border-radius: 30px; padding: 12px 28px; margin: 0;">Send</button>
+            </form>
+
+        {% else %}
+            <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--text-muted);">
+                <span style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;">💬</span>
+                <p style="font-weight: 600; letter-spacing: 0.5px; font-size: 1.1rem;">Select a connection to start messaging</p>
+            </div>
+        {% endif %}
     </div>
 </div>
+<script>
+    // Existing chat scroll script
+    const chatBox = document.getElementById('chat-box');
+    if (chatBox) {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // ─── NEW: PEER-TO-PEER DATA CALL LOGIC ───
+    function startDataCall(currentUser, contactUser) {
+        // 1. Sort the usernames alphabetically so both users generate the exact same room name
+        const participants = [currentUser, contactUser].sort();
+        
+        // 2. Create a unique, private room ID
+        const secretRoomName = "A1Networks-PrivateCall-" + participants[0] + "-" + participants[1];
+        
+        // 3. Open the secure calling interface (Supports both Voice and Video!)
+        const callUrl = "https://meet.jit.si/" + secretRoomName;
+        
+        // Opens the call in a neat popup window
+        window.open(callUrl, "A1CallWindow", "width=900,height=700,border=0,scrollbars=no");
+    }
+</script>
 {% endblock %}

@@ -1,0 +1,151 @@
+/* 1. Import Premium Geometric Font */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+    /* ─── THE WORKHUB AMBER PALETTE ─── */
+    --primary: #f59e0b; /* The vibrant Amber from your screenshot */
+    --primary-hover: #d97706;
+    --bg-page: #FDFBF7; /* The exact warm cream/skin-tone background */
+    --card-bg: #ffffff;
+    --border-light: #f1f1ef;
+    
+    --text-dark: #0f172a; /* Deep Navy headings */
+    --text-muted: #64748b;
+    
+    --gold: var(--primary);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg-page);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ─── LOGIN CONTAINER ─── */
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ─── LOGIN CARD (Solid White & Smooth) ─── */
+#login-card {
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff !important;
+    border: 1px solid var(--border-light);
+    border-radius: 24px;
+    padding: 45px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.03) !important;
+    animation: fadeIn 0.8s ease;
+}
+
+/* Brand Name */
+.brand-name {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--primary) !important;
+    margin-bottom: 30px;
+    text-align: center;
+    letter-spacing: -1px;
+}
+
+/* Smooth Inputs */
+.c-input {
+    width: 100%;
+    background: #ffffff !important;
+    border: 1.5px solid #e2e8f0 !important;
+    color: var(--text-dark) !important;
+    border-radius: 12px !important;
+    padding: 12px 18px !important;
+    font-size: 0.95rem !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    outline: none;
+    transition: all 0.25s ease !important;
+}
+
+.c-input:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1) !important;
+}
+
+/* The "Logout" Style Button (Solid Amber) */
+.c-btn {
+    width: 100%;
+    background: var(--primary) !important;
+    color: #ffffff !important;
+    border: none;
+    border-radius: 50px !important; /* Perfect Pill Shape */
+    padding: 14px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2) !important;
+    transition: all 0.3s ease;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.c-btn:hover {
+    background: var(--primary-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Links & Text */
+.c-forgot a, .c-signup a {
+    color: var(--primary) !important;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.c-forgot a:hover, .c-signup a:hover {
+    text-decoration: underline;
+}
+
+.c-welcome {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.c-subtext {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 30px;
+}
+
+/* Social Icons (Circles) */
+.c-soc {
+    width: 44px;
+    height: 44px;
+    border: 1.5px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    color: var(--text-dark) !important;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.c-soc:hover {
+    border-color: var(--primary) !important;
+    color: var(--primary) !important;
+    transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

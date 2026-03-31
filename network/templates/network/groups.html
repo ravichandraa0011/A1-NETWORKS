@@ -1,0 +1,41 @@
+{% extends 'network/base.html' %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 0 auto;">
+    
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 class="glass-title">Discussion Groups</h1>
+        <p style="color: var(--text-dim); font-size: 1.1rem; margin-bottom: 20px;">Use a #hashtag in your feed to automatically start a new community.</p>
+        
+        <form method="GET" action="{% url 'network:groups' %}" style="display: flex; justify-content: center; gap: 10px; max-width: 500px; margin: 0 auto;">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search for a #topic..." style="flex-grow: 1; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); padding: 12px 20px; border-radius: 30px; color: #fff; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; outline: none;">
+            <button type="submit" class="glass-btn" style="border-radius: 30px; padding: 0 25px;">Search</button>
+        </form>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+        
+        {% for group in groups %}
+        <div class="glass-card" style="padding: 25px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h2 style="font-family: 'Cinzel', serif; color: var(--gold); margin-top: 0; font-size: 1.4rem;">#{{ group.name }}</h2>
+                <p style="color: var(--text-warm); font-size: 0.95rem; line-height: 1.5;">{{ group.description }}</p>
+            </div>
+            
+            <div style="margin-top: 20px; border-top: 1px solid var(--glass-border); padding-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-dim); font-size: 0.85rem;">👥 {{ group.members.count }} Members</span>
+                <a href="{% url 'network:group_detail' group.id %}" style="text-decoration: none;">
+                    <button class="glass-btn" style="padding: 8px 15px; font-size: 0.9rem;">Join Discussion &rarr;</button>
+                </a>
+            </div>
+        </div>
+        
+        {% empty %}
+        <div class="glass-card" style="grid-column: 1 / -1; text-align: center; color: var(--text-dim); padding: 40px;">
+            <p style="font-size: 1.1rem;">No topics found.</p>
+        </div>
+        {% endfor %}
+        
+    </div>
+</div>
+{% endblock %}

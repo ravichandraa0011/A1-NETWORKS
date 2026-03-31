@@ -1,0 +1,459 @@
+/* ─── 1. IMPORT PREMIUM FONTS ─── */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
+/* ─── 2. THE WORKHUB AMBER PALETTE ─── */
+:root {
+    --primary: #f59e0b;       /* Vibrant Amber */
+    --primary-glow: rgba(245, 158, 11, 0.4);
+    --primary-hover: #d97706; /* Deep Amber */
+    --bg-page: #fafaf9;       /* Ultra-clean warm white */
+    --card-bg: rgba(255, 255, 255, 0.85); /* Slightly translucent for glass effect */
+    --border-light: #f1f1ef;  /* Very Soft Gray */
+    
+    --text-dark: #0f172a;     /* Deep Navy for Headings */
+    --text-muted: #64748b;    /* Slate for body text */
+    
+    --gold: var(--primary);   /* Fallback for your chatbot */
+    --red: #ef4444;           /* Soft Red for logout/errors */
+}
+
+/* ─── 3. BASE STYLES & SMOOTH SCROLL ─── */
+html {
+    scroll-behavior: smooth; /* Buttery smooth page scrolling */
+}
+
+* { 
+    box-sizing: border-box; 
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+body {
+    background-color: var(--bg-page) !important;
+    color: var(--text-dark) !important;
+    margin: 0; 
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased; /* Makes text look razor sharp */
+}
+
+/* Premium Text Selection */
+::selection {
+    background: rgba(245, 158, 11, 0.3); 
+    color: #0f172a;
+}
+
+h1, h2, h3, h4, h5, .glass-title {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    color: var(--text-dark) !important;
+    font-weight: 700 !important;
+    margin-top: 0;
+}
+
+/* ─── 4. PAGE LOAD ENTRANCE ANIMATION ─── */
+@keyframes smoothEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.app-container {
+    animation: smoothEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── 5. CARDS (PREMIUM FLOATING) ─── */
+.glass-card {
+    background: var(--card-bg) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    margin-bottom: 20px !important; 
+    
+    /* Smooth hover transitions */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255,255,255,1) !important; 
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease !important;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px); /* Floats up slightly */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06), 0 0 15px rgba(245, 158, 11, 0.1) !important; 
+    border-color: rgba(245, 158, 11, 0.2) !important; /* Soft amber glow on border */
+}
+
+/* ✅ REPLACE IT WITH THIS: */
+.glass-card p, .glass-card label {
+    color: var(--text-muted); /* Removed 'div', 'span', and '!important' */
+}
+
+.glass-card strong, .glass-card h1, .glass-card h2, .glass-card h3 { 
+    color: var(--text-dark) !important; 
+}
+
+/* Clean gray background for missing profile banners */
+.glass-card > div[style*="height: 200px"] {
+    background-color: #f1f5f9 !important;
+    border-radius: 12px;
+}
+
+/* Playful Image Tilt */
+img {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-card img:hover {
+    transform: scale(1.03) rotate(-1deg);
+}
+
+/* ─── 6. BREATHING INPUTS ─── */
+input[type="text"], input[type="email"], input[type="password"], input[type="url"], input[type="tel"], input[type="number"], textarea, select, .glass-input {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1.5px solid #e2e8f0 !important;
+    color: var(--text-dark) !important;
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+    font-size: 0.95rem !important;
+    width: 100% !important;
+    outline: none !important;
+    
+    /* Smooth transition */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+input:focus, textarea:focus, select:focus {
+    transform: scale(1.01); /* Breathes outward slightly when typing */
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15) !important;
+    background: #ffffff !important;
+}
+
+/* ─── 7. BUTTERY SQUISH BUTTONS ─── */
+.glass-btn, button[type="submit"] {
+    background: var(--primary) !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 12px 28px !important;
+    border-radius: 50px !important; 
+    font-weight: 700 !important;
+    font-size: 0.95rem !important; 
+    cursor: pointer;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none !important;
+    
+    /* Transitions */
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.glass-btn:hover, button[type="submit"]:hover {
+    background: var(--primary-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3) !important;
+}
+
+/* The 'Squish' Effect */
+.glass-btn:active, button[type="submit"]:active {
+    transform: translateY(1px) scale(0.95) !important; 
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
+}
+
+/* Transparent Outline Button Variant */
+.glass-btn[style*="transparent"] {
+    background: #ffffff !important;
+    border: 2px solid var(--primary) !important; 
+    color: var(--primary) !important;
+    box-shadow: none !important;
+}
+.glass-btn[style*="transparent"]:hover {
+    background: rgba(245, 158, 11, 0.05) !important;
+}
+
+/* ─── 8. ULTRA MODERN FLOATING NAVBAR ─── */
+.nav-glass {
+    position: sticky;
+    top: 15px; 
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 25px;
+    margin: 0 20px 30px 20px; 
+    
+    background: rgba(255, 255, 255, 0.85); 
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    
+    border-radius: 100px; 
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04), inset 0 -1px 0 rgba(255,255,255,0.5);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-glass:hover {
+    box-shadow: 0 15px 40px rgba(245, 158, 11, 0.08), inset 0 -1px 0 rgba(255,255,255,0.8);
+}
+
+/* Brand Logo */
+.nav-logo {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-dark) !important; 
+    text-decoration: none;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-logo::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: var(--primary); 
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+    transition: transform 0.3s ease;
+}
+
+/* ─── CUSTOM BRAND LOGO HIGHLIGHT ─── */
+.brand-highlight {
+    color: var(--primary) !important; /* Forces the text to be your vibrant Amber */
+    font-weight: 800 !important;      /* Makes it extra thick and bold */
+    margin-right: 3px;                /* Gives it just a tiny bit of breathing room */
+}
+.nav-logo:hover {
+    color: var(--primary) !important;
+}
+.nav-logo:hover::before {
+    transform: scale(1.5); 
+}
+
+/* Nav Links Container */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 5px; 
+}
+
+/* Individual Link Hover Animation */
+.nav-link {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-muted) !important; 
+    text-decoration: none;
+    padding: 8px 18px;
+    border-radius: 50px; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    background: rgba(245, 158, 11, 0.1); 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: -1;
+    border-radius: 50px;
+}
+
+.nav-link:hover {
+    color: var(--primary-hover) !important; 
+    transform: translateY(-2px); 
+}
+.nav-link:hover::before {
+    height: 100%; 
+}
+.nav-link:active {
+    transform: scale(0.95);
+}
+
+/* Logout Button Link */
+form .nav-link {
+    color: var(--red) !important; 
+}
+form .nav-link::before {
+    background: rgba(239, 68, 68, 0.1); 
+}
+form .nav-link:hover {
+    color: #dc2626 !important;
+}
+
+/* Responsive Navbar */
+@media (max-width: 900px) {
+    .nav-glass {
+        flex-direction: column;
+        border-radius: 20px;
+        padding: 15px;
+        gap: 15px;
+    }
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* ─── 9. PLAYFUL CHATBOT ─── */
+#chatbot-toggle {
+    transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important; /* Bouncy transition */
+}
+
+#chatbot-toggle:hover {
+    transform: scale(1.15) rotate(360deg) !important; /* Full happy spin */
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.5) !important;
+}
+
+/* ─── 10. PREMIUM CHAT BUBBLES ─── */
+/* Received Message (The Left Side) */
+.message-received {
+background: #ffffff;
+    border: 1px solid #e2e8f0  ;
+    color: #0f172a ; /* Deep navy text for readability */
+    padding: 12px 18px ;
+    
+    /* Playful chat bubble shape: Round on 3 sides, sharp on the bottom-left */
+    border-radius: 18px 18px 18px 4px !important; 
+    
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important; /* Soft glass shadow */
+    max-width: 75%;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* Sent Message (The Right Side) */
+.message-sent {
+    background: rgba(245, 158, 11, 0.1) !important; 
+    border: 1px solid rgba(245, 158, 11, 0.3) !important; 
+    color: #0f172a !important;
+    padding: 12px 18px !important;
+    
+    /* Chat bubble shape: Round on 3 sides, sharp on the bottom-right */
+    border-radius: 18px 18px 4px 18px !important; 
+    
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.05) !important;
+    max-width: 75%;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* The Timestamps */
+.message-time {
+    font-size: 0.75rem !important;
+    color: var(--text-muted) !important; /* Soft slate grey */
+    margin-top: 6px;
+    display: block;
+    text-align: right;
+}
+.message-received .message-time {
+    text-align: left; /* Aligns timestamp left for received messages */
+}
+/* ─── 11. PREMIUM FILE UPLOAD BUTTONS ─── */
+input[type="file"] {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border: 1.5px dashed #cbd5e1 !important; /* Dashed border for file drop areas */
+    color: var(--text-muted) !important;
+    border-radius: 12px !important;
+    padding: 10px !important;
+    font-size: 0.9rem !important;
+    width: 100% !important;
+    cursor: pointer;
+    transition: all 0.3s ease !important;
+}
+
+input[type="file"]:hover {
+    border-color: var(--primary) !important;
+    background: #ffffff !important;
+}
+
+/* This targets the actual "Choose File" button inside the input */
+input[type="file"]::file-selector-button {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: var(--text-dark);
+    padding: 8px 16px;
+    border-radius: 50px; /* Pill shape */
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-right: 15px;
+    transition: all 0.2s ease;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
+}
+/* ─── 11. FIX DJANGO DEFAULT INPUTS (Edit Profile Page) ─── */
+
+/* 1. Force all Django text/number inputs to use the breathing Glass style */
+.glass-card input {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1.5px solid #e2e8f0 !important;
+    color: var(--text-dark) !important;
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+    font-size: 0.95rem !important;
+    width: 100%;
+    outline: none !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.glass-card input:focus {
+    transform: scale(1.01) !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15) !important;
+    background: #ffffff !important;
+}
+
+/* 2. Premium Drag-and-Drop style for Django File Uploads */
+.glass-card input[type="file"] {
+    background: #f8fafc !important;
+    border: 2px dashed #cbd5e1 !important; /* Dashed border looks premium */
+    color: var(--text-muted) !important;
+    border-radius: 12px !important;
+    padding: 15px !important;
+    font-size: 0.9rem !important;
+    cursor: pointer !important;
+}
+
+.glass-card input[type="file"]:hover {
+    border-color: var(--primary) !important;
+    background: #ffffff !important;
+}
+
+/* 3. Transform the ugly gray 'Choose File' button into an Amber Pill */
+.glass-card input[type="file"]::file-selector-button {
+    background: var(--primary) !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 8px 20px !important;
+    border-radius: 50px !important; 
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    cursor: pointer !important;
+    margin-right: 15px !important;
+    transition: all 0.2s ease !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2) !important;
+}
+
+.glass-card input[type="file"]::file-selector-button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 15px rgba(245, 158, 11, 0.4) !important;
+    background: var(--primary-hover) !important;
+}

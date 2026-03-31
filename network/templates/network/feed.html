@@ -1,0 +1,104 @@
+{% extends 'network/base.html' %}
+
+{% block content %}
+<div style="max-width: 750px; margin: 40px auto; padding: 0 20px;">
+    
+    <div class="glass-card" style="padding: 30px; margin-bottom: 40px;">
+        <h2 style="font-size: 1.3rem; margin-top: 0; margin-bottom: 15px; color: var(--text-dark);">Share an Update</h2>
+        
+        <form method="POST" action="{% url 'network:feed' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <textarea name="content" rows="3" class="glass-input" placeholder="Share your latest achievements, projects, or thoughts..." style="width: 100%; resize: none; margin-bottom: 15px; border-radius: 12px;"></textarea>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                <div style="flex-grow: 1;">
+                    <input type="file" name="image" accept="image/*" style="margin: 0;">
+                </div>
+                
+                <button type="submit" class="glass-btn" style="white-space: nowrap;">Post Update</button>
+            </div>
+        </form>
+    </div>
+
+    {% for post in posts %}
+    <div class="glass-card" style="margin-bottom: 30px; padding: 30px;">
+        
+       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+            
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 45px; height: 45px; border-radius: 50%; background: rgba(245, 158, 11, 0.1); border: 1px solid var(--primary); display: flex; align-items: center; justify-content: center;">
+                    <strong style="color: var(--primary); font-size: 1.1rem;">{{ post.author.first_name|first }}{{ post.author.last_name|first }}</strong>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.1rem; margin: 0; color: var(--text-dark); font-weight: 700;">{{ post.author.first_name }} {{ post.author.last_name }}</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 2px 0 0 0; font-weight: 500;">{{ post.created_at|timesince }} ago</p>
+                </div>
+            </div>
+
+            {% if post.author == request.user %}
+            <form method="POST" action="{% url 'network:delete_post' post.id %}" onsubmit="return confirm('Are you sure you want to delete this post? This cannot be undone.');">
+                {% csrf_token %}
+                <button type="submit" style="background: rgba(239, 68, 68, 0.05); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); padding: 6px 14px; border-radius: 50px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s ease;">
+                    Delete
+                </button>
+            </form>
+            {% endif %}
+
+        </div>
+        
+        <p class="post-content" style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 20px; color: var(--text-dark); white-space: pre-wrap;">{{ post.content }}</p>
+        
+        {% if post.image %}
+        <div style="margin-bottom: 20px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-light); box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <img src="{{ post.image.url }}" alt="Post Attachment" style="width: 100%; height: auto; display: block; max-height: 600px; object-fit: cover;">
+        </div>
+        {% endif %}
+        
+        <div style="display: flex; gap: 20px; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); padding: 12px 0; margin-bottom: 20px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
+            <span>👁 {{ post.views }} Views</span>
+            <span>👍 {{ post.likes.count }} Likes</span>
+            <span>💬 {{ post.comments.count }} Comments</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+            <form method="POST" action="{% url 'network:like_post' post.id %}">
+                {% csrf_token %}
+                <button type="submit" class="glass-btn" style="{% if not request.user in post.likes.all %}background: transparent !important; color: var(--text-muted) !important; border-color: var(--border-light) !important;{% endif %} padding: 8px 24px !important;">
+                    {% if request.user in post.likes.all %}👍 Liked{% else %}👍 Like{% endif %}
+                </button>
+            </form>
+        </div>
+
+        <div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: 12px; padding: 20px;">
+            
+            {% for comment in post.comments.all %}
+                <div style="margin-bottom: 15px; border-bottom: 1px solid var(--border-light); padding-bottom: 15px;">
+                    <strong style="color: var(--text-dark); font-size: 0.9rem;">{{ comment.author.first_name }} {{ comment.author.last_name }}</strong>
+                    <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 10px;">{{ comment.created_at|timesince }} ago</span>
+                    <p style="font-size: 0.95rem; margin: 6px 0 0 0; color: var(--text-dark); font-weight: 500;">{{ comment.content }}</p>
+                </div>
+            {% empty %}
+                <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin-bottom: 15px;">No comments yet. Be the first!</p>
+            {% endfor %}
+            
+            <form method="POST" action="{% url 'network:add_comment' post.id %}" style="display: flex; gap: 10px; margin-top: 15px;">
+                {% csrf_token %}
+                <input type="text" name="content" class="glass-input" placeholder="Write a comment..." style="flex-grow: 1; border-radius: 50px !important;">
+                <button type="submit" class="glass-btn" style="padding: 10px 24px !important;">Post</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    // This script finds #words and turns them into clickable links!
+    document.addEventListener('DOMContentLoaded', () => {
+        const posts = document.querySelectorAll('.post-content');
+        posts.forEach(post => {
+            // Updated the link color to match your new Amber theme
+            post.innerHTML = post.innerHTML.replace(/#(\w+)/g, '<a href="/groups/tag/$1/" style="color: var(--primary); text-decoration: none; font-weight: 700;">#$1</a>');
+        });
+    });
+</script>
+{% endblock %}

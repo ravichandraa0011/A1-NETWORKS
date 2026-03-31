@@ -16,16 +16,19 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.onrender.com']
 
 # Application definition
 INSTALLED_APPS = [
+    'daphne',  # 1. MUST be at the very top for real-time to work
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Your Custom Apps
-    'accounts',
-    'network',
-    'jobs',
+    'accounts.apps.AccountsConfig', # <--- THIS WAS MISSING!
+
+    # My Apps
+    'network.apps.NetworkConfig',
+    'jobs.apps.JobsConfig', # 2. Make sure there is only ONE 'jobs' entry here
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -57,8 +60,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'network_platform.wsgi.application'
-
-# Database Configuration (Cloud ready, falls back to local SQLite)
+ASGI_APPLICATION = 'network_platform.asgi.application'# Database Configuration (Cloud ready, falls back to local SQLite)
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{os.path.join(BASE_DIR, 'db.sqlite3')}",
@@ -84,6 +86,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static'] # Add this if it's missing!
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -106,3 +110,12 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 # Login/Logout Redirects
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'accounts:login'
+# settings.py
+GEMINI_API_KEY = "AIzaSyDjZ4s5SMZ9IG8-Eeh5CiAH-4_2XcFuBJs"
+# settings.py
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}       

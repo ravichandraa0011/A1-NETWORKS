@@ -25,5 +25,7 @@ class CustomUser(AbstractUser):
     github_link = models.URLField(max_length=200, blank=True, null=True, help_text="Link to your GitHub profile")
     portfolio_website = models.URLField(max_length=200, blank=True, null=True, help_text="Link to your personal site")
 
+    mobile_number = models.CharField(max_length=15, blank=True, null=True)
+    
     def __str__(self):
         return f"{self.first_name} {self.last_name} (@{self.username})"

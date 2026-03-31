@@ -1,37 +1,113 @@
 {% extends 'network/base.html' %}
 
-{% block title %}Post a Job | NicheNetwork{% endblock %}
+{% block title %}Hire Talent | Work Connect{% endblock %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 0 auto; background: white; padding: 2.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-    <h2 style="margin-top: 0; color: #111827;">Post a New Opportunity</h2>
-    <p style="color: #6b7280; margin-bottom: 2rem;">Share an open role with your verified professional network.</p>
-
-    <form method="POST" style="display: flex; flex-direction: column; gap: 1.25rem;">
-        {% csrf_token %}
-        
-        {{ form.as_p }}
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
-            <a href="{% url 'jobs:job_list' %}" style="color: #6b7280; text-decoration: none; font-weight: bold;">Cancel</a>
-            <button type="submit" style="padding: 0.75rem 2rem; background-color: #10b981; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer;">
-                Publish Job Post
-            </button>
-        </div>
-    </form>
-</div>
-
 <style>
-    /* Quick styling to make the Django form fields look modern */
-    .form-control {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        margin-top: 0.5rem;
-        box-sizing: border-box;
-        font-family: inherit;
+    form p {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
     }
-    form p { margin: 0; font-weight: bold; color: #374151; }
+    form p label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--navy-dark);
+    }
+    form span.helptext {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        margin-top: 5px;
+    }
 </style>
+
+<div style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
+    <div class="glass-card" style="padding: 40px;">
+        <h2 style="margin-top: 0; margin-bottom: 10px;">Post a New Opportunity</h2>
+        <p style="color: var(--text-muted); margin-bottom: 30px;">Find the right professional for your task.</p>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            {{ form.as_p }}
+
+            <p>
+                <label>Required Profession / Worker Type</label>
+                <input type="text" name="worker_type" list="profession-options" placeholder="Search profession..." class="glass-input" style="width: 100%;">
+                
+                <datalist id="profession-options">
+                    <option value="Software Engineer">
+                    <option value="Full Stack Developer">
+                    <option value="Frontend Developer">
+                    <option value="Backend Developer">
+                    <option value="Python/Django Developer">
+                    <option value="Data Scientist">
+                    <option value="AI / Machine Learning Engineer">
+                    <option value="Cloud Architect (AWS/Azure)">
+                    <option value="DevOps Specialist">
+                    <option value="Cybersecurity Analyst / Ethical Hacker">
+                    <option value="IT Support Specialist">
+                    <option value="Database Administrator">
+                    <option value="Mobile App Developer">
+                    
+                    <option value="Project Manager">
+                    <option value="Product Manager">
+                    <option value="Chartered Accountant (CA)">
+                    <option value="Financial Analyst">
+                    <option value="Human Resources (HR) Manager">
+                    <option value="Sales Executive">
+                    <option value="Marketing Manager">
+                    <option value="Business Analyst">
+                    <option value="Supply Chain Manager">
+                    <option value="Legal Advisor / Lawyer">
+
+                    <option value="UI/UX Designer">
+                    <option value="Graphic Designer">
+                    <option value="Video Editor">
+                    <option value="Content Writer / Copywriter">
+                    <option value="Social Media Manager">
+                    <option value="Photographer / Videographer">
+                    <option value="2D/3D Animator">
+                    <option value="Freelance Content Creator">
+                    <option value="Event Planner">
+
+                    <option value="Civil Engineer">
+                    <option value="Electrical Engineer">
+                    <option value="Electrician">
+                    <option value="Plumber">
+                    <option value="Carpenter">
+                    <option value="Welder">
+                    <option value="Painter">
+                    <option value="Auto Mechanic">
+                    <option value="HVAC / AC Technician">
+                    <option value="Mason / Bricklayer">
+                    <option value="General Contractor">
+                    <option value="Interior Designer">
+
+                    <option value="Delivery Partner">
+                    <option value="Cab / Auto Driver">
+                    <option value="Housekeeping / Maid">
+                    <option value="Chef / Cook">
+                    <option value="Barista / Bartender">
+                    <option value="Security Guard">
+                    <option value="Personal Fitness Trainer">
+                    <option value="Teacher / Private Tutor">
+                    <option value="Virtual Assistant">
+                    <option value="Data Entry Operator">
+                    <option value="Handyman / All-Rounder">
+                    <option value="Landscaper / Gardener">
+                    <option value="Make-up Artist">
+                    <option value="Babysitter / Nanny">
+                    <option value="Pet Sitter / Dog Walker">
+                </datalist>
+            </p>
+            
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-light);">
+                <a href="{% url 'jobs:job_list' %}" style="color: var(--text-muted); text-decoration: none; font-weight: 600;">Cancel</a>
+                <button type="submit" class="glass-btn">Publish Job Post</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

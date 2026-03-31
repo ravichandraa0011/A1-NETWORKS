@@ -1,0 +1,41 @@
+{% extends 'network/base.html' %}
+
+{% block content %}
+<div class="glass-card" style="display: flex; flex-direction: column; height: 75vh; max-width: 900px; margin: 0 auto; padding: 20px;">
+    
+    <div style="border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 class="glass-title" style="margin-bottom: 0;">{{ group.name }}</h2>
+            <p style="color: var(--text-dim); font-size: 0.9rem;">{{ group.description }}</p>
+        </div>
+        <a href="{% url 'network:groups' %}" style="color: var(--gold); text-decoration: none; font-family: 'Cinzel'; font-size: 0.85rem;">← Back to Groups</a>
+    </div>
+
+    <div style="flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 10px; margin-bottom: 20px;">
+        {% for msg in messages %}
+        <div style="display: flex; gap: 15px; align-items: flex-start; {% if msg.author == request.user %}flex-direction: row-reverse;{% endif %}">
+            
+            <div style="width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--gold); background: rgba(200,160,85,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <span style="font-family: 'Cinzel'; color: var(--gold); font-size: 0.8rem;">{{ msg.author.first_name|first }}</span>
+            </div>
+            
+            <div style="background: {% if msg.author == request.user %}rgba(200,160,85,0.15){% else %}rgba(0,0,0,0.3){% endif %}; border: 1px solid var(--glass-border); padding: 12px 18px; border-radius: 12px; max-width: 75%;">
+                <div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 5px; align-items: center;">
+                    <span style="font-family: 'Cinzel'; font-size: 0.8rem; font-weight: bold; color: {% if msg.author == request.user %}var(--text-warm){% else %}var(--gold){% endif %};">{{ msg.author.first_name }} {{ msg.author.last_name }}</span>
+                    <span style="font-size: 0.65rem; color: var(--text-dim);">{{ msg.created_at|time:"H:i" }}</span>
+                </div>
+                <p style="font-size: 1.05rem; line-height: 1.4;">{{ msg.content }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; color: var(--text-dim); margin-top: 50px; font-style: italic;">No messages yet. Be the first to say hello!</div>
+        {% endfor %}
+    </div>
+
+    <form method="POST" action="{% url 'network:group_detail' group.id %}" style="display: flex; gap: 15px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
+        {% csrf_token %}
+        <input type="text" name="content" placeholder="Type your message..." autocomplete="off" required style="flex-grow: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 30px; padding: 12px 25px; color: var(--text-warm); font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; outline: none;">
+        <button type="submit" class="glass-btn" style="border-radius: 30px; padding: 10px 25px;">Send</button>
+    </form>
+</div>
+{% endblock %}

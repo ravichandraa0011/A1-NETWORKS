@@ -1,0 +1,99 @@
+{% extends 'network/base.html' %}
+
+{% block title %}{{ job.title }} | Work Connect{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
+    
+    <div class="glass-card" style="padding: 40px; margin-bottom: 30px; position: relative; overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <h1 style="font-family: 'Cinzel', serif; color: var(--gold); margin: 0;">{{ job.title }}</h1>
+                <p style="color: var(--text-warm); font-size: 1.2rem; margin: 5px 0;">{{ job.company }} • {{ job.location }}</p>
+                <div style="margin-top: 15px;">
+                    <span style="background: rgba(200,160,85,0.1); border: 1px solid var(--gold); padding: 5px 15px; border-radius: 20px; color: var(--gold); font-size: 0.8rem;">
+                        {{ job.worker_type|default:job.industry }}
+                    </span>
+                </div>
+            </div>
+            
+            
+            <div style="text-align: right;">
+                {% if job.posted_by == request.user %}
+                    <a href="{% url 'jobs:edit_job' job.id %}" class="glass-btn" style="background: rgba(200,160,85,0.15); border: 1px solid var(--gold); color: var(--gold); text-decoration: none; transition: 0.3s;">
+                        ✏️ Edit Posting
+                    </a>
+                {% elif user_app %}
+                    <span class="glass-btn" style="border-color: #10b981; color: #10b981; cursor: default; background: rgba(16,185,129,0.1);">
+                        Applied ✅ ({{ user_app.status|title }})
+                    </span>
+                {% else %}
+                    <form method="POST" action="{% url 'jobs:apply_to_job' job.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="glass-btn" style="padding: 12px 30px; cursor: pointer;">Apply for Role</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+        
+        <div class="glass-card" style="padding: 30px;">
+            <h3 style="font-family: 'Cinzel', serif; color: var(--gold);">Requirement Details</h3>
+            <p style="color: #fff; line-height: 1.6; white-space: pre-wrap;">{{ job.description }}</p>
+            
+            <h4 style="font-family: 'Cinzel', serif; color: var(--gold); margin-top: 30px;">Required Skills</h4>
+            <p style="color: var(--text-dim);">{{ job.required_skills }}</p>
+        </div>
+
+        <div>
+            <div class="glass-card" style="padding: 30px; text-align: center; margin-bottom: 20px;">
+                <h4 style="color: var(--text-dim); margin: 0;">Salary Range</h4>
+                <h2 style="color: var(--gold); margin: 10px 0;">{{ job.salary_range }}</h2>
+                <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 20px 0;">
+                <p style="color: var(--text-dim); font-size: 0.9rem;">Posted by @{{ job.posted_by.username }}</p>
+            </div>
+
+            {% if job.contact_number %}
+            <div class="glass-card" style="padding: 20px; text-align: center; border-color: var(--green);">
+                <h4 style="color: var(--text-dim); margin: 0 0 10px 0; font-size: 0.9rem;">Contact for Hiring</h4>
+                <span style="background: rgba(45,107,69,0.2); padding: 8px 15px; border-radius: 8px; font-size: 1.1rem; color: #4ade80; font-weight: bold; display: inline-block;">
+                    📞 {{ job.contact_number }}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if job.posted_by == request.user %}
+    <div class="glass-card" style="margin-top: 30px; padding: 30px;">
+        <h3 style="font-family: 'Cinzel', serif; color: var(--gold); border-bottom: 1px solid var(--glass-border); padding-bottom: 15px;">Manage Applications</h3>
+        
+        {% for app in job.applications.all %}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div>
+                <strong style="color: white; font-size: 1.1rem;">{{ app.applicant.first_name }} {{ app.applicant.last_name }}</strong>
+                <p style="color: var(--text-dim); margin: 0; font-size: 0.85rem;">@{{ app.applicant.username }} • Applied {{ app.created_at|timesince }} ago</p>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                {% if app.status == 'pending' %}
+                    <a href="{% url 'jobs:manage_app' app.id 'accept' %}" class="glass-btn" style="color: #10b981; border-color: #10b981;">Accept</a>
+                    <a href="{% url 'jobs:manage_app' app.id 'reject' %}" class="glass-btn" style="color: #ef4444; border-color: #ef4444;">Reject</a>
+                {% elif app.status == 'accepted' %}
+                    <a href="{% url 'network:inbox_chat' app.applicant.username %}" class="glass-btn">💬 Chat</a>
+                    <span style="color: #10b981; align-self: center; margin-left: 10px;">Accepted</span>
+                {% else %}
+                    <span style="color: #ef4444; align-self: center;">Rejected</span>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p style="text-align: center; color: var(--text-dim); padding: 20px;">No applications yet.</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+</div>
+{% endblock %}

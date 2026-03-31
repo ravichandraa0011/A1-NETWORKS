@@ -1,65 +1,86 @@
 {% extends 'network/base.html' %}
 
-{% block title %}Job Board | NicheNetwork{% endblock %}
+{% block title %}Job Board | Work Connect{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-    <h2>Industry Job Board</h2>
-    {% if user.is_authenticated %}
-        <a href="{% url 'jobs:post_job' %}" style="padding: 0.75rem 1.5rem; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
-            + Post a Job
-        </a>
-    {% endif %}
-</div>
+<div style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+    
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h1 style="font-family: 'Cinzel', serif; color: var(--gold); font-size: 2.5rem; letter-spacing: 0.1em; margin-bottom: 10px;">Opportunities</h1>
+        <p style="color: var(--text-dim); font-size: 1.1rem;">Discover your next big role or gig.</p>
+    </div>
 
-{% if user.is_authenticated and recommended_jobs %}
-    <div style="background: linear-gradient(to right, #1e293b, #0f172a); padding: 2rem; border-radius: 12px; margin-bottom: 3rem; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <h3 style="margin: 0 0 1.5rem 0; font-size: 1.3rem; color: #fbbf24;">✨ Recommended based on your Profile</h3>
+    {% if recommended_jobs %}
+    <div style="margin-bottom: 50px;">
+        <h3 style="font-family: 'Cinzel', serif; color: var(--gold); border-bottom: 1px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px;">
+            ✨ Recommended For You
+        </h3>
         
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
             {% for job in recommended_jobs %}
-                <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #fbbf24;">
-                    <h4 style="margin: 0 0 0.5rem 0; font-size: 1.2rem;">{{ job.title }}</h4>
-                    <p style="margin: 0 0 1rem 0; color: #cbd5e1; font-size: 0.9rem;">{{ job.company }} • {{ job.location }}</p>
-                    <a href="mailto:{{ job.posted_by.email }}?subject=Application for {{ job.title }} role via Work Connect" style="color: #fbbf24; text-decoration: none; font-weight: bold; font-size: 0.9rem;">Fast Apply &rarr;</a>
-                </div>
+            <div class="glass-card" style="padding: 25px; border: 1px solid var(--gold); background: rgba(200,160,85,0.05); margin-bottom: 0;">
+                <h2 style="color: white; font-size: 1.2rem; margin: 0 0 5px 0;">{{ job.title }}</h2>
+                <p style="color: var(--text-warm); font-size: 0.9rem; margin: 0 0 15px 0;">{{ job.company }} • {{ job.location }}</p>
+                
+                <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;">
+                    {{ job.description|truncatewords:15 }}
+                </p>
+                
+                <a href="{% url 'jobs:job_detail' job.id %}" class="glass-btn" style="display: block; text-align: center; text-decoration: none;">View Details</a>
+            </div>
             {% endfor %}
         </div>
     </div>
-{% endif %}
+    {% endif %}
 
-<div style="display: flex; flex-direction: column; gap: 1.5rem;">
-    {% for job in jobs %}
-        <div style="background: white; padding: 2rem; border-radius: 8px; border-left: 5px solid #10b981; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <div>
-                    <h3 style="margin: 0 0 0.5rem 0; color: #111827; font-size: 1.5rem;">{{ job.title }}</h3>
-                    <h4 style="margin: 0 0 1rem 0; color: #4b5563; font-weight: normal;">{{ job.company }} • {{ job.location }}</h4>
+    <div>
+        <h3 style="font-family: 'Cinzel', serif; color: var(--text-warm); border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 20px;">
+            All Open Roles
+        </h3>
+
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            {% for job in jobs %}
+            <div class="glass-card" style="padding: 25px; margin-bottom: 0; display: flex; justify-content: space-between; align-items: center;">
+                
+                <div style="flex-grow: 1;">
+                    <h2 style="color: white; font-size: 1.3rem; margin: 0 0 5px 0;">{{ job.title }}</h2>
+                    <p style="color: var(--text-dim); font-size: 0.95rem; margin: 0 0 10px 0;">
+                        <strong>{{ job.company }}</strong> • {{ job.location }}
+                    </p>
+                    
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <span style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; color: var(--text-warm);">
+                            {{ job.worker_type|default:job.industry }}
+                        </span>
+                        {% if job.salary_range %}
+                        <span style="background: rgba(200,160,85,0.1); border: 1px solid rgba(200,160,85,0.3); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; color: var(--gold);">
+                            💰 {{ job.salary_range }}
+                        </span>
+                        {% endif %}
+                    </div>
                 </div>
-                {% if job.salary_range %}
-                    <span style="background: #f3f4f6; color: #374151; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem;">
-                        {{ job.salary_range }}
-                    </span>
-                {% endif %}
+
+               <div style="text-align: right; min-width: 150px;">
+    <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 15px;">Posted {{ job.created_at|timesince }} ago</p>
+    
+    {% if job.posted_by == request.user %}
+        <a href="{% url 'jobs:edit_job' job.id %}" class="glass-btn" style="text-decoration: none; padding: 10px 25px; background: rgba(200,160,85,0.15); border: 1px solid var(--gold); color: var(--gold);">✏️ Edit</a>
+    {% elif job.id in applied_job_ids %}
+        <span class="glass-btn" style="padding: 10px 25px; background: rgba(16,185,129,0.1); border: 1px solid #10b981; color: #10b981; cursor: default;">Applied ✅</span>
+    {% else %}
+        <a href="{% url 'jobs:job_detail' job.id %}" class="glass-btn" style="text-decoration: none; padding: 10px 25px;">View Details</a>
+    {% endif %}
+</div>
+
             </div>
-            {% if job.required_skills %}
-                <div style="margin-bottom: 1rem;">
-                    <span style="font-size: 0.85rem; color: #6b7280; font-weight: bold; text-transform: uppercase;">Required Skills:</span><br>
-                    <span style="color: #2563eb; font-weight: 500;">{{ job.required_skills }}</span>
-                </div>
-            {% endif %}
-                        
-            <p style="color: #374151; line-height: 1.6; margin-bottom: 1.5rem;">{{ job.description|linebreaksbr }}</p>
-            
-            <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem; font-size: 0.9rem; color: #6b7280; display: flex; justify-content: space-between;">
-                <span>Posted {{ job.created_at|timesince }} ago by <a href="{% url 'network:profile' job.posted_by.username %}" style="color: #2563eb; text-decoration: none; font-weight: bold;">{{ job.posted_by.first_name }} {{ job.posted_by.last_name }}</a></span>
-                <a href="mailto:{{ job.posted_by.email }}?subject=Application for {{ job.title }} role via Work Connect" style="color: #059669; font-weight: bold; text-decoration: none;">Apply via Email &rarr;</a>
+            {% empty %}
+            <div class="glass-card" style="text-align: center; padding: 50px;">
+                <h3 style="color: var(--text-warm); margin-bottom: 10px;">No jobs available right now.</h3>
+                <p style="color: var(--text-dim);">Check back later or post an opportunity yourself!</p>
             </div>
+            {% endfor %}
         </div>
-    {% empty %}
-        <div style="text-align: center; padding: 3rem; background: white; border-radius: 8px;">
-            <p style="color: #6b7280; font-size: 1.1rem;">No jobs posted yet. Be the first to post an opportunity!</p>
-        </div>
-    {% endfor %}
+    </div>
+
 </div>
 {% endblock %}
