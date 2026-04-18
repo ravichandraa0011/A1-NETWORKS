@@ -6,37 +6,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}A1 Networks{% endblock %}</title>    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="{% static 'css/network.css' %}?v=11.0">
+
+ 
 </head>
 <body>
 
     <nav class="nav-glass">
-            <a href="{% url 'network:feed' %}" class="nav-logo">
-                <span class="brand-highlight">A1</span> Networks
-            </a>            <div class="nav-links">
+        <a href="{% url 'network:feed' %}" class="nav-logo">
+            <span class="brand-highlight">A1</span> Networks
+        </a>            
+        
+        <div class="nav-links" style="display: flex; align-items: center; gap: 15px;">
+            <a href="{% url 'network:feed' %}" class="nav-link">Feed</a>
             <a href="{% url 'network:directory' %}" class="nav-link">Directory</a>
             
             {% if user.is_authenticated %}
-            <a href="{% url 'network:my_network' %}" class="nav-link">My Network</a>
+                <a href="{% url 'network:my_network' %}" class="nav-link">Network</a>
 
-            
-            <a href="{% url 'jobs:post_job' %}" class="nav-link">Post A Job</a>
-            <a href="{% url 'jobs:my_posted_jobs' %}" class="nav-link">My Postings</a>
-            <a href="{% url 'jobs:job_list' %}" class="nav-link">Jobs</a>
-            <a href="{% url 'network:feed' %}" class="nav-link">Feed</a>
-            <a href="{% url 'network:inbox' %}" class="nav-link">Inbox</a>
-            <a href="{% url 'network:groups' %}" class="nav-link">Groups</a>
-            <a href="{% url 'network:inbox' %}" class="nav-link">Inbox</a>
-              <a href="{% url 'network:profile' username=user.username %}" class="nav-link">Profile</a>
-            {% else %}
-                <a href="{% url 'accounts:login' %}" class="nav-link">Profile</a>
-            {% endif %}
-            {% if user.is_authenticated %}
-                <form method="POST" action="{% url 'accounts:logout' %}" style="display:inline;">
+                <div class="dropdown" style="position: relative; display: inline-block;">
+                    <span class="nav-link" style="cursor: pointer; font-weight: 500; display:flex; align-items:center; gap:4px;">
+                        Work <span style="font-size:0.7em;">▼</span>
+                    </span>
+                    <div class="dropdown-content">
+                        <a href="{% url 'jobs:job_list' %}">Browse Jobs</a>
+                        <a href="{% url 'jobs:post_job' %}">Post a Job</a>
+                        <a href="{% url 'jobs:my_posted_jobs' %}">My Postings</a>
+                    </div>
+                </div>
+
+                <a href="{% url 'network:groups' %}" class="nav-link">Groups</a>
+                <a href="{% url 'network:inbox' %}" class="nav-link">Inbox</a>
+                
+                <div style="display: flex; align-items: center; background: rgba(16, 185, 129, 0.05); padding: 4px 12px; border-radius: 50px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                    <a href="{% url 'network:local_radar' %}" class="nav-link" style="color: #059669; font-weight: 700; margin-right: 10px; padding: 0;">📡 Radar</a>
+                    
+                    <form method="POST" action="{% url 'network:toggle_availability' %}" style="display:inline; margin: 0;">
+                        {% csrf_token %}
+                        {% if request.user.profile.is_available_today %}
+                            <button type="submit" style="background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid #059669; padding: 4px 10px; font-size: 0.75rem; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.2s;">
+                                🟢 ON
+                            </button>
+                        {% else %}
+                            <button type="submit" style="background: rgba(100, 116, 139, 0.1); color: #64748b; border: 1px solid #cbd5e1; padding: 4px 10px; font-size: 0.75rem; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.2s;">
+                                ⚪ OFF
+                            </button>
+                        {% endif %}
+                    </form>
+                </div>
+
+                <a href="{% url 'network:profile' username=user.username %}" class="nav-link">Profile</a>
+                
+                <form method="POST" action="{% url 'accounts:logout' %}" style="display:inline; margin: 0;">
                     {% csrf_token %}
-                    <button type="submit" style="background:none; border:none; color: var(--red); font-weight: 500; cursor:pointer;" class="nav-link">Logout</button>
+                    <button type="submit" style="background: #ef4444; color: white; border: none; padding: 6px 16px; font-size: 0.85rem; border-radius: 50px; cursor:pointer; font-weight: 600; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); transition: 0.2s;">Logout</button>
                 </form>
+
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="nav-link">Login</a>
             {% endif %}
         </div>
     </nav>
@@ -97,7 +124,7 @@
             console.log("✅ 3. SUCCESS: WebSocket Connected!");
         };
 
-       socket.onmessage = function(e) {
+        socket.onmessage = function(e) {
             console.log("📥 BINGO! Message Received from Server: ", e.data);
             
             const data = JSON.parse(e.data);

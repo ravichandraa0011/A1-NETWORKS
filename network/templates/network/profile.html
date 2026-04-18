@@ -67,6 +67,34 @@
                     <a href="{% url 'network:portfolio_maker' profile_user.username %}" target="_blank" style="text-decoration: none;">
                         <button class="glass-btn">📄 Generate PDF Resume</button>
                     </a>
+                    {% if request.user != profile_user %}
+    <div class="glass-card" style="margin-top: 40px; padding: 30px;">
+        <h3 style="color: var(--text-dark); margin: 0 0 15px 0; font-weight: 700;">Leave a Review</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Did you recently hire {{ profile_user.first_name }}? Share your experience to help others in the network.</p>
+        
+        <form method="POST" action="{% url 'network:leave_review' profile_user.username %}" style="display: flex; flex-direction: column; gap: 15px;">
+            {% csrf_token %}
+            
+            <div>
+                <label style="color: var(--text-dark); font-weight: 600; font-size: 0.9rem; display: block; margin-bottom: 5px;">Rating (1-5 Stars)</label>
+                <select name="rating" required class="glass-input" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-light); outline: none;">
+                    <option value="5">⭐⭐⭐⭐⭐ (5) - Excellent</option>
+                    <option value="4">⭐⭐⭐⭐ (4) - Very Good</option>
+                    <option value="3">⭐⭐⭐ (3) - Average</option>
+                    <option value="2">⭐⭐ (2) - Poor</option>
+                    <option value="1">⭐ (1) - Terrible</option>
+                </select>
+            </div>
+            
+            <div>
+                <label style="color: var(--text-dark); font-weight: 600; font-size: 0.9rem; display: block; margin-bottom: 5px;">Written Review (Optional)</label>
+                <textarea name="comment" rows="3" placeholder="Describe the quality of their work..." class="glass-input" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-light); outline: none; resize: vertical;"></textarea>
+            </div>
+            
+            <button type="submit" class="glass-btn" style="align-self: flex-start; padding: 10px 25px !important;">Submit Review</button>
+        </form>
+    </div>
+    {% endif %}
                 {% else %}
                     {% if connection_status == 'accepted' %}
                         <a href="{% url 'network:inbox_chat' profile_user.username %}" style="text-decoration: none;">

@@ -31,4 +31,9 @@ urlpatterns = [
     # Add this line somewhere in your urlpatterns list:
     path('chatbot/respond/', views.chatbot_response, name='chatbot_respond'),
     path('post/<int:post_id>/delete/', views.delete_post, name='delete_post'),
+    # Add these inside your urlpatterns = [ ... ]
+    path('radar/', views.local_radar, name='local_radar'),
+    path('toggle-radar/', views.toggle_availability, name='toggle_availability'),
+    path('user/<str:username>/review/', views.leave_review, name='leave_review'),
+    path('analytics/', views.profile_analytics, name='profile_analytics'),
 ]

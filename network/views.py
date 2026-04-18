@@ -9,6 +9,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.db.models import Sum
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Profile
+from .models import Review
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+import json
+
 # Import your network models
 from .models import (
     ProjectPortfolio, Connection, ProjectReview, 
@@ -383,5 +394,78 @@ def analytics_dashboard(request):
         'recent_views': recent_views, 
         'view_count': recent_views.count(),
         'total_post_views': total_post_views, # Pass the real number to HTML
+    }
+    return render(request, 'network/analytics.html', context)
+
+
+@login_required
+def toggle_availability(request):
+    # Get or create the profile just in case it doesn't exist yet
+    profile, created = Profile.objects.get_or_create(user=request.user)
+    
+    # Flip the switch! (If it was False, make it True. If True, make it False)
+    profile.is_available_today = not profile.is_available_today
+    profile.save()
+    
+    status = "ON" if profile.is_available_today else "OFF"
+    messages.success(request, f"Your Local Radar is now {status}.")
+    
+    # Send them back to the page they clicked it from
+    return redirect(request.META.get('HTTP_REFERER', 'network:my_network'))
+
+@login_required
+def local_radar(request):
+    # Grab EVERY user who has their radar turned ON
+    available_workers = Profile.objects.filter(is_available_today=True).select_related('user')
+    
+    return render(request, 'network/radar.html', {'available_workers': available_workers})
+@login_required
+def leave_review(request, username):
+    receiver = get_object_or_404(User, username=username)
+    
+    # Don't let people review themselves!
+    if request.user == receiver:
+        messages.error(request, "You cannot review yourself.")
+        return redirect('network:profile', username=username)
+
+    if request.method == 'POST':
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment', '')
+        
+        if rating:
+            Review.objects.create(
+                reviewer=request.user,
+                receiver=receiver,
+                rating=int(rating),
+                comment=comment
+            )
+            messages.success(request, f"Review submitted for {receiver.first_name}!")
+            
+    return redirect('network:profile', username=username)
+@login_required
+def profile_analytics(request):
+    # Get the date from exactly 7 days ago
+    seven_days_ago = timezone.now() - timedelta(days=7)
+    
+    # Query the database for views on the current user's profile
+    daily_views = ProfileView.objects.filter(
+        viewed_user=request.user,
+        timestamp__gte=seven_days_ago
+    ).annotate(date=TruncDate('timestamp')) \
+     .values('date') \
+     .annotate(count=Count('id')) \
+     .order_by('date')
+
+   # ... your existing database query above ...
+
+    # 1. Create the raw Python lists
+    dates = [(seven_days_ago + timedelta(days=i)).strftime('%b %d') for i in range(8)]
+    counts_dict = {dv['date'].strftime('%b %d'): dv['count'] for dv in daily_views if dv['date']}
+    chart_data = [counts_dict.get(d, 0) for d in dates]
+
+    # 2. Pass them raw (NO json.dumps!)
+    context = {
+        'dates': dates, 
+        'chart_data': chart_data
     }
     return render(request, 'network/analytics.html', context)

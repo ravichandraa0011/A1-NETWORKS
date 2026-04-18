@@ -1,67 +1,79 @@
 {% extends 'network/base.html' %}
-
-{% block title %}Profile Analytics | Work Connect{% endblock %}
+{% block title %}Analytics | A1 Networks{% endblock %}
 
 {% block content %}
-<div style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
+<div style="max-width: 900px; margin: 0 auto; padding: 20px;">
     
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <h1 style="color: var(--text-dark); font-weight: 800; font-size: 2.2rem; letter-spacing: -1px; margin: 0;">Profile Analytics</h1>
-        <a href="{% url 'network:profile' username=request.user.username %}" class="glass-btn" style="background: transparent; border: 2px solid var(--primary); color: var(--primary);">
-            &larr; Back to Profile
-        </a>
-    </div>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 50px;">
+    <div class="glass-card" style="padding: 40px;">
+        <h2 style="font-size: 2rem; margin-bottom: 5px;">📊 Profile Analytics</h2>
+        <p style="color: var(--text-muted); margin-bottom: 30px;">Track your visibility and network reach over the last 7 days.</p>
         
-        <div class="glass-card" style="padding: 35px; text-align: center; border: 2px solid rgba(245, 158, 11, 0.2) !important;">
-            <h3 style="color: var(--text-dark); font-weight: 700; margin-top: 0; font-size: 1.1rem;">Total Profile Views</h3>
-            <p style="font-size: 4.5rem; font-weight: 800; color: var(--primary) !important; line-height: 1; margin: 15px 0;">{{ view_count }}</p>
-            <p style="color: var(--text-muted); font-size: 0.95rem; font-weight: 500; margin: 0;">From other users</p>
+        <div style="position: relative; height: 400px; width: 100%;">
+            <canvas id="viewsChart"></canvas>
         </div>
-
-        <div class="glass-card" style="padding: 35px; text-align: center;">
-            <h3 style="color: var(--text-dark); font-weight: 700; margin-top: 0; font-size: 1.1rem;">Post Impressions</h3>
-            <p style="font-size: 4.5rem; font-weight: 800; color: var(--primary) !important; line-height: 1; margin: 15px 0;">{{ total_post_views }}</p> 
-            <p style="color: var(--text-muted); font-size: 0.95rem; font-weight: 500; margin: 0;">Views across your feed posts</p>
-        </div>
-
     </div>
-    
-    <h2 style="color: var(--text-dark); font-weight: 800; font-size: 1.5rem; border-bottom: 2px solid var(--border-light); padding-bottom: 15px; margin-bottom: 25px;">
-        Who Viewed Your Profile
-    </h2>
-
-    <div class="glass-card" style="padding: 10px 20px;">
-        {% for view in recent_views %}
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--border-light);">
-                
-                <div style="display: flex; align-items: center; gap: 18px;">
-                    <img src="{% if view.viewer.profile_picture %}{{ view.viewer.profile_picture.url }}{% else %}/static/default_pic.png{% endif %}" alt="Profile" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);">
-                    
-                    <div>
-                        <a href="{% url 'network:profile' view.viewer.username %}" style="color: var(--text-dark); text-decoration: none; font-weight: 700; font-size: 1.15rem; transition: color 0.2s;">
-                            {{ view.viewer.first_name }} {{ view.viewer.last_name }}
-                        </a>
-                        <p style="color: var(--text-muted); margin: 4px 0 0 0; font-size: 0.9rem; font-weight: 500;">{{ view.viewer.headline|default:"Professional" }}</p>
-                    </div>
-                </div>
-
-                <div style="text-align: right;">
-                    <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; margin: 0; background: #f1f5f9; padding: 6px 12px; border-radius: 50px;">
-                        {{ view.timestamp|timesince }} ago
-                    </p>
-                </div>
-
-            </div>
-        {% empty %}
-            <div style="text-align: center; padding: 50px 20px;">
-                <span style="font-size: 3rem; opacity: 0.5; margin-bottom: 15px; display: block;">📊</span>
-                <p style="color: var(--text-dark); font-weight: 700; font-size: 1.2rem; margin-bottom: 5px;">No recent views yet</p>
-                <p style="color: var(--text-muted); font-size: 1rem;">Keep your profile updated and post in groups to increase visibility!</p>
-            </div>
-        {% endfor %}
-    </div>
-
 </div>
+
+
+{{ dates|json_script:"dates-data" }}
+{{ chart_data|json_script:"chart-data" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Safely parse the data without quote errors!
+        const dates = JSON.parse(document.getElementById('dates-data').textContent);
+        const dataPoints = JSON.parse(document.getElementById('chart-data').textContent);
+
+        const canvas = document.getElementById('viewsChart');
+        if (!canvas) return; // Failsafe
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Create a beautiful Amber Gradient
+        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(245, 158, 11, 0.5)'); 
+        gradient.addColorStop(1, 'rgba(245, 158, 11, 0.0)'); 
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Unique Profile Views',
+                    data: dataPoints,
+                    borderColor: '#f59e0b',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#f59e0b',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    fill: true,
+                    tension: 0.4 // Makes the line smoothly curved
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, color: '#64748b' },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    x: {
+                        ticks: { color: '#64748b' },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}
