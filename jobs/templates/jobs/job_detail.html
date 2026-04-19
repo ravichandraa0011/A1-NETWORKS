@@ -1,6 +1,6 @@
 {% extends 'network/base.html' %}
 
-{% block title %}{{ job.title }} | Work Connect{% endblock %}
+{% block title %}{{ job.title }} |A1 Networks {% endblock %}
 
 {% block content %}
 <div style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
@@ -17,16 +17,23 @@
                 </div>
             </div>
             
-            
             <div style="text-align: right;">
                 {% if job.posted_by == request.user %}
                     <a href="{% url 'jobs:edit_job' job.id %}" class="glass-btn" style="background: rgba(200,160,85,0.15); border: 1px solid var(--gold); color: var(--gold); text-decoration: none; transition: 0.3s;">
                         ✏️ Edit Posting
                     </a>
                 {% elif user_app %}
-                    <span class="glass-btn" style="border-color: #10b981; color: #10b981; cursor: default; background: rgba(16,185,129,0.1);">
-                        Applied ✅ ({{ user_app.status|title }})
-                    </span>
+                    {% if user_app.status == 'pending' %}
+                        <button class="glass-btn job-withdraw-btn" 
+                                data-url="{% url 'jobs:withdraw_application' job.id %}"
+                                style="background: rgba(239, 68, 68, 0.1) !important; border: 1px solid #ef4444 !important; color: #ef4444 !important; cursor: pointer; padding: 12px 30px; font-weight: bold;">
+                            Withdraw Application
+                        </button>
+                    {% else %}
+                        <span class="glass-btn" style="border-color: #10b981; color: #10b981; cursor: default; background: rgba(16,185,129,0.1); padding: 12px 30px;">
+                            Applied ✅ ({{ user_app.status|title }})
+                        </span>
+                    {% endif %}
                 {% else %}
                     <form method="POST" action="{% url 'jobs:apply_to_job' job.id %}" style="display:inline;">
                         {% csrf_token %}
@@ -96,4 +103,52 @@
     {% endif %}
     
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const withdrawButtons = document.querySelectorAll('.job-withdraw-btn');
+    const csrfToken = '{{ csrf_token }}';
+
+    withdrawButtons.forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const btn = this;
+            const targetUrl = btn.getAttribute('data-url');
+            
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Withdrawing...';
+            btn.style.opacity = '0.7';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(targetUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+
+                if (data.status === 'withdrawn') {
+                    // Success! Refresh the page instantly to show the Apply button again
+                    window.location.reload();
+                } else {
+                    btn.innerHTML = originalText;
+                    btn.style.opacity = '1';
+                    btn.disabled = false;
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error("Network error:", error);
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

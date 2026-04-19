@@ -6,6 +6,7 @@ from django.db.models import Q
 from network.models import Message 
 from .models import Job, JobApplication
 from .forms import JobForm
+from django.http import JsonResponse
 
 
 # --- 1. THE MAIN JOB BOARD ---
@@ -152,3 +153,18 @@ def delete_job(request, job_id):
         
     # Redirect back to their dashboard so they see the job is gone
     return redirect('jobs:my_posted_jobs')
+@login_required
+def withdraw_application(request, job_id):
+    if request.method == 'POST':
+        # Find the specific job and the user's application for it
+        job = get_object_or_404(Job, id=job_id)
+        application = get_object_or_404(JobApplication, job=job, applicant=request.user)
+        
+        # Only allow withdrawal if the employer hasn't processed it yet
+        if application.status == 'pending':
+            application.delete()
+            return JsonResponse({"status": "withdrawn", "message": "Application withdrawn."})
+        else:
+            return JsonResponse({"status": "error", "message": "Cannot withdraw processed applications."})
+            
+    return JsonResponse({"status": "error", "message": "Invalid method."})

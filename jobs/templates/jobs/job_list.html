@@ -60,17 +60,24 @@
                     </div>
                 </div>
 
-               <div style="text-align: right; min-width: 150px;">
-    <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 15px;">Posted {{ job.created_at|timesince }} ago</p>
-    
-    {% if job.posted_by == request.user %}
-        <a href="{% url 'jobs:edit_job' job.id %}" class="glass-btn" style="text-decoration: none; padding: 10px 25px; background: rgba(200,160,85,0.15); border: 1px solid var(--gold); color: var(--gold);">✏️ Edit</a>
-    {% elif job.id in applied_job_ids %}
-        <span class="glass-btn" style="padding: 10px 25px; background: rgba(16,185,129,0.1); border: 1px solid #10b981; color: #10b981; cursor: default;">Applied ✅</span>
-    {% else %}
-        <a href="{% url 'jobs:job_detail' job.id %}" class="glass-btn" style="text-decoration: none; padding: 10px 25px;">View Details</a>
-    {% endif %}
-</div>
+                <div style="text-align: right; min-width: 150px;">
+                    <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 15px;">Posted {{ job.created_at|timesince }} ago</p>
+                    
+                    {% if job.posted_by == request.user %}
+                        <a href="{% url 'jobs:edit_job' job.id %}" class="glass-btn" style="text-decoration: none; padding: 10px 25px; background: rgba(200,160,85,0.15); border: 1px solid var(--gold); color: var(--gold);">✏️ Edit</a>
+                    
+                    {% elif job.id in applied_job_ids %}
+                        <button class="glass-btn job-withdraw-btn" 
+                                data-url="{% url 'jobs:withdraw_application' job.id %}"
+                                data-detail-url="{% url 'jobs:job_detail' job.id %}"
+                                style="padding: 10px 25px; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; cursor: pointer;">
+                            Withdraw
+                        </button>
+
+                    {% else %}
+                        <a href="{% url 'jobs:job_detail' job.id %}" class="glass-btn" style="text-decoration: none; padding: 10px 25px;">View Details</a>
+                    {% endif %}
+                </div>
 
             </div>
             {% empty %}
@@ -83,4 +90,53 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const withdrawButtons = document.querySelectorAll('.job-withdraw-btn');
+    const csrfToken = '{{ csrf_token }}';
+
+    withdrawButtons.forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const btn = this;
+            const targetUrl = btn.getAttribute('data-url');
+            const detailUrl = btn.getAttribute('data-detail-url');
+            
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Withdrawing...';
+            btn.style.opacity = '0.7';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(targetUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+
+                if (data.status === 'withdrawn') {
+                    // Instantly change the button back to a "View Details" link styling
+                    btn.outerHTML = `<a href="${detailUrl}" class="glass-btn" style="text-decoration: none; padding: 10px 25px; display: inline-block;">View Details</a>`;
+                } else {
+                    btn.innerHTML = originalText;
+                    btn.style.opacity = '1';
+                    btn.disabled = false;
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error("Network error:", error);
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

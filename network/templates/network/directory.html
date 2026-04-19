@@ -19,6 +19,7 @@
         </p>
     </div>
 </div>
+
 <div style="max-width: 1100px; margin: 0 auto; padding: 0 20px;">
     
     <div class="glass-card" style="padding: 20px; margin-bottom: 40px; border: 1px solid var(--border-light);">
@@ -37,20 +38,27 @@
                 </div>
                 
                 <h3 style="margin: 0 0 5px 0; color: var(--text-dark); font-size: 1.25rem; font-weight: 700;">{{ u.first_name }} {{ u.last_name }}</h3>
-                <p style="margin: 0 0 20px 0; color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">{{ u.headline|default:"Professional" }}</p>
+                <p style="margin: 0 0 20px 0; color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">{{ u.profile.headline|default:"Professional" }}</p>
                 
                 <div style="margin-top: auto; width: 100%; display: flex; gap: 10px; justify-content: center;">
                     <a href="{% url 'network:profile' u.username %}" class="glass-btn" style="background: transparent !important; color: var(--text-dark) !important; border: 1px solid var(--border-light) !important; padding: 8px 18px !important; font-size: 0.85rem !important;">Profile</a>
                     
-                    {% if u in connected_users %}
+                   {% if u in connected_users %}
                         <button disabled class="glass-btn" style="background: rgba(16,185,129,0.1) !important; color: #059669 !important; border: 1px solid #059669 !important; padding: 8px 18px !important; font-size: 0.85rem !important; cursor: default;">Connected</button>
+                    
                     {% elif u in pending_users %}
-                        <button disabled class="glass-btn" style="background: rgba(245,158,11,0.1) !important; color: var(--primary) !important; border: 1px solid var(--primary) !important; padding: 8px 18px !important; font-size: 0.85rem !important; cursor: default;">Pending</button>
+                        <button class="glass-btn connect-btn" 
+                                data-url="{% url 'network:send_request' u.username %}"
+                                style="background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; border: 1px solid #ef4444 !important; padding: 8px 18px !important; font-size: 0.85rem !important;">
+                            Withdraw
+                        </button>
+                    
                     {% else %}
-                        <form method="POST" action="{% url 'network:send_request' u.username %}" style="margin: 0;">
-                            {% csrf_token %}
-                            <button type="submit" class="glass-btn" style="padding: 8px 18px !important; font-size: 0.85rem !important;">Connect</button>
-                        </form>
+                        <button class="glass-btn connect-btn" 
+                                data-url="{% url 'network:send_request' u.username %}"
+                                style="padding: 8px 18px !important; font-size: 0.85rem !important;">
+                            Connect
+                        </button>
                     {% endif %}
                 </div>
             </div>
@@ -64,4 +72,67 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const connectButtons = document.querySelectorAll('.connect-btn');
+    const csrfToken = '{{ csrf_token }}';
+
+    connectButtons.forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.preventDefault(); 
+            
+            const btn = this;
+            const targetUrl = btn.getAttribute('data-url');
+            
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Sending...';
+            btn.style.opacity = '0.7';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(targetUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+
+               // 3. Update the button permanently based on Django's response
+                // 3. Update the button permanently based on Django's response
+                if (data.status === 'sent') {
+                    // Turn it into a Red Withdraw Button (Using setProperty for !important)
+                    btn.innerHTML = 'Withdraw';
+                    btn.style.setProperty('background', 'rgba(239, 68, 68, 0.1)', 'important');
+                    btn.style.setProperty('color', '#ef4444', 'important');
+                    btn.style.setProperty('border', '1px solid #ef4444', 'important');
+                    btn.style.opacity = '1';
+                    btn.disabled = false;
+                } else if (data.status === 'withdrawn') {
+                    // Turn it back into a standard Connect Button
+                    btn.innerHTML = 'Connect';
+                    btn.style.setProperty('background', 'var(--primary)', 'important');
+                    btn.style.setProperty('color', 'white', 'important');
+                    btn.style.setProperty('border', 'none', 'important');
+                    btn.style.opacity = '1';
+                    btn.disabled = false;
+                } else {
+                    btn.innerHTML = originalText;
+                    btn.style.opacity = '1';
+                    btn.disabled = false;
+                }
+                
+            } catch (error) {
+                console.error("Network error:", error);
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

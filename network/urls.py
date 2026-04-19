@@ -36,4 +36,6 @@ urlpatterns = [
     path('toggle-radar/', views.toggle_availability, name='toggle_availability'),
     path('user/<str:username>/review/', views.leave_review, name='leave_review'),
     path('analytics/', views.profile_analytics, name='profile_analytics'),
-]
+    path('connect/<str:username>/', views.send_request, name='send_request'),
+    path('invite/<str:username>/', views.invite_to_job, name='invite_to_job'),
+    ]

@@ -19,7 +19,7 @@
                 <h2 style="color: var(--text-dark); font-weight: 700; margin: 0 0 5px 0; font-size: 1.4rem;">{{ job.title }}</h2>
                 <p style="color: var(--text-muted); margin: 0; font-size: 0.95rem; font-weight: 500;">
                     Posted {{ job.created_at|date:"M d, Y" }} • 
-                    <span style="font-weight: 600; color: {% if job.is_active %}#10b981{% else %}#ef4444{% endif %};">
+                    <span style="font-weight: 600; color: {% if job.is_active %}'#10b981'{% else %}'#ef4444'{% endif %};">
                         {% if job.is_active %}Active{% else %}Closed{% endif %}
                     </span>
                 </p>
@@ -50,6 +50,7 @@
                     
                     <div style="display: flex; gap: 10px; align-items: center;">
                         {% if app.status == 'pending' %}
+                        
                             <a href="{% url 'jobs:manage_app' app.id 'accept' %}" style="text-decoration: none; padding: 6px 15px; font-size: 0.85rem; font-weight: 600; background: rgba(16,185,129,0.1); color: #059669; border: 1px solid rgba(16,185,129,0.3); border-radius: 50px; transition: all 0.2s;">Accept</a>
                             <a href="{% url 'jobs:manage_app' app.id 'reject' %}" style="text-decoration: none; padding: 6px 15px; font-size: 0.85rem; font-weight: 600; background: rgba(239,68,68,0.05); color: #dc2626; border: 1px solid rgba(239,68,68,0.3); border-radius: 50px; transition: all 0.2s;">Reject</a>
                         {% elif app.status == 'accepted' %}

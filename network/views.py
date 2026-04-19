@@ -137,14 +137,31 @@ def my_network(request):
 def send_request(request, username):
     if request.method == 'POST':
         target_user = get_object_or_404(User, username=username)
-        if target_user != request.user:
-            already_exists = Connection.objects.filter(
-                (Q(sender=request.user, receiver=target_user) | Q(sender=target_user, receiver=request.user))
-            ).exists()
+        
+        if target_user == request.user:
+            return JsonResponse({"status": "error", "message": "Cannot connect with yourself."})
             
-            if not already_exists:
-                Connection.objects.create(sender=request.user, receiver=target_user, is_accepted=False)
-    return redirect('network:directory')
+        # Find the exact connection request
+        connection = Connection.objects.filter(sender=request.user, receiver=target_user).first()
+        
+        if connection:
+            # If it exists but is still pending, let the user withdraw it
+            if not connection.is_accepted:
+                connection.delete()
+                return JsonResponse({"status": "withdrawn", "message": "Request withdrawn."})
+            else:
+                return JsonResponse({"status": "info", "message": "You are already connected."})
+        else:
+            # Check if they sent US a request first
+            reverse_conn = Connection.objects.filter(sender=target_user, receiver=request.user).exists()
+            if reverse_conn:
+                 return JsonResponse({"status": "info", "message": "They already sent you a request!"})
+                 
+            # Otherwise, create the new connection request
+            Connection.objects.create(sender=request.user, receiver=target_user, is_accepted=False)
+            return JsonResponse({"status": "sent", "message": "Request sent!"})
+            
+    return JsonResponse({"status": "error", "message": "Invalid request."})
 
 @login_required
 def accept_request(request, connection_id):
@@ -413,12 +430,53 @@ def toggle_availability(request):
     # Send them back to the page they clicked it from
     return redirect(request.META.get('HTTP_REFERER', 'network:my_network'))
 
+# ─── UPDATE THIS EXISTING FUNCTION ───
 @login_required
 def local_radar(request):
-    # Grab EVERY user who has their radar turned ON
-    available_workers = Profile.objects.filter(is_available_today=True).select_related('user')
+    available_workers = Profile.objects.filter(is_available_today=True).exclude(user=request.user).select_related('user')
     
-    return render(request, 'network/radar.html', {'available_workers': available_workers})
+    my_connections = Connection.objects.filter(Q(sender=request.user) | Q(receiver=request.user))
+    connected_users = [conn.receiver if conn.sender == request.user else conn.sender for conn in my_connections if conn.is_accepted]
+    pending_users = [conn.receiver if conn.sender == request.user else conn.sender for conn in my_connections if not conn.is_accepted]
+    
+    # NEW: Fetch the current user's active jobs so they can select one in the popup!
+    my_jobs = Job.objects.filter(posted_by=request.user, is_active=True)
+
+    context = {
+        'available_workers': available_workers,
+        'connected_users': connected_users,
+        'pending_users': pending_users,
+        'my_jobs': my_jobs, # Pass the jobs to the HTML
+    }
+    return render(request, 'network/radar.html', context)
+
+
+# ─── PASTE THIS NEW FUNCTION RIGHT BELOW IT ───
+@login_required
+def invite_to_job(request, username):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            job_id = data.get('job_id')
+            target_user = get_object_or_404(User, username=username)
+            job = get_object_or_404(Job, id=job_id, posted_by=request.user)
+
+            # 1. Create a connection request automatically
+            Connection.objects.get_or_create(
+                sender=request.user, 
+                receiver=target_user,
+                defaults={'is_accepted': False}
+            )
+
+            # 2. Shoot them an automated Direct Message with the Job Info!
+            invite_text = f"Hi {target_user.first_name}! I saw you on the Local Radar and would love to invite you to apply for my open role: {job.title}."
+            Message.objects.create(sender=request.user, receiver=target_user, content=invite_text)
+
+            return JsonResponse({'status': 'success', 'message': 'Invitation sent!'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+            
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 @login_required
 def leave_review(request, username):
     receiver = get_object_or_404(User, username=username)

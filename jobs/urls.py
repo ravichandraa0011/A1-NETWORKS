@@ -12,4 +12,5 @@ urlpatterns = [
     path('my-posts/', views.my_posted_jobs, name='my_posted_jobs'),
     path('<int:job_id>/edit/', views.edit_job, name='edit_job'),
     path('delete/<int:job_id>/', views.delete_job, name='delete_job'),
+    path('withdraw-application/<int:job_id>/', views.withdraw_application, name='withdraw_application'),
 ]
