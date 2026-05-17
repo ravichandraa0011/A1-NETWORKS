@@ -111,7 +111,7 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'accounts:login'
 # settings.py
-GEMINI_API_KEY = "AIzaSyDjZ4s5SMZ9IG8-Eeh5CiAH-4_2XcFuBJs"
+GEMINI_API_KEY = "AIzaSyAqX0q1Bb7TllGibCJa_gdOsigjST8Ecmo"
 # settings.py
 
 CHANNEL_LAYERS = {

@@ -1,7 +1,15 @@
 /* ─── 1. IMPORT PREMIUM FONTS ─── */
+
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
 
 /* ─── 2. THE WORKHUB AMBER PALETTE ─── */
+/* ─── MASTER PAGE CONTAINER ─── */
+.main-container {
+    max-width: 1100px; /* This locks every page to the exact same width! */
+    margin: 40px auto; /* 40px space at the top/bottom, perfectly centered */
+    padding: 0 20px;   /* Prevents touching the screen edges on mobile */
+    width: 100%;
+}
 :root {
     --primary: #f59e0b;       /* Vibrant Amber */
     --primary-glow: rgba(245, 158, 11, 0.4);
@@ -315,6 +323,7 @@ form .nav-link:hover {
 }
 
 /* ─── 10. PREMIUM CHAT BUBBLES ─── */
+/* ─── 10. PREMIUM CHAT BUBBLES ─── */
 .message-received {
     background: #ffffff;
     border: 1px solid #e2e8f0;
@@ -325,6 +334,12 @@ form .nav-link:hover {
     max-width: 75%;
     font-size: 0.95rem;
     line-height: 1.4;
+    
+    /* ─── THE FIX: Force long unbreakable strings to wrap! ─── */
+    /* ─── THE GUARANTEED FIX FOR LONG STRINGS ─── */
+    word-break: break-all !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
 }
 
 .message-sent {
@@ -337,6 +352,12 @@ form .nav-link:hover {
     max-width: 75%;
     font-size: 0.95rem;
     line-height: 1.4;
+
+    /* ─── THE FIX: Force long unbreakable strings to wrap! ─── */
+   /* ─── THE GUARANTEED FIX FOR LONG STRINGS ─── */
+    word-break: break-all !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
 }
 
 .message-time {

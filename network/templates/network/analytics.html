@@ -2,8 +2,7 @@
 {% block title %}Analytics | A1 Networks{% endblock %}
 
 {% block content %}
-<div style="max-width: 900px; margin: 0 auto; padding: 20px;">
-    
+<div class="main-container">    
     <div class="glass-card" style="padding: 40px;">
         <h2 style="font-size: 2rem; margin-bottom: 5px;">📊 Profile Analytics</h2>
         <p style="color: var(--text-muted); margin-bottom: 30px;">Track your visibility and network reach over the last 7 days.</p>
@@ -14,7 +13,6 @@
     </div>
 </div>
 
-
 {{ dates|json_script:"dates-data" }}
 {{ chart_data|json_script:"chart-data" }}
 
@@ -22,12 +20,12 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Safely parse the data without quote errors!
+        // Javascript safely reads the data tags without crashing!
         const dates = JSON.parse(document.getElementById('dates-data').textContent);
         const dataPoints = JSON.parse(document.getElementById('chart-data').textContent);
 
         const canvas = document.getElementById('viewsChart');
-        if (!canvas) return; // Failsafe
+        if (!canvas) return; 
         
         const ctx = canvas.getContext('2d');
         

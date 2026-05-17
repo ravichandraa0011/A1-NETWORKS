@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import Profile, Review, Connection, ProjectPortfolio, Post, TopicGroup
+from .models import (
+    Profile, Review, Connection, ProfileView, 
+    Message, ProjectPortfolio, ProjectReview, 
+    Post, Comment, TopicGroup, GroupMessage
+)
 
 # ─── 1. USER PROFILES MASTER TABLE ───
 @admin.register(Profile)
@@ -40,24 +44,48 @@ class ProjectPortfolioAdmin(admin.ModelAdmin):
     list_filter = ('is_peer_reviewed', 'created_at')
     search_fields = ('title', 'owner__username', 'description')
 
+@admin.register(ProjectReview)
+class ProjectReviewAdmin(admin.ModelAdmin):
+    list_display = ('project', 'reviewer', 'created_at')
+    search_fields = ('project__title', 'reviewer__username')
 
-# ─── 4. CONNECTIONS ───
+
+# ─── 4. CONNECTIONS & ANALYTICS ───
 @admin.register(Connection)
 class ConnectionAdmin(admin.ModelAdmin):
     list_display = ('sender', 'receiver', 'is_accepted', 'created_at')
-    list_filter = ('is_accepted',)
+    list_filter = ('is_accepted', 'created_at')
     search_fields = ('sender__username', 'receiver__username')
 
+@admin.register(ProfileView)
+class ProfileViewAdmin(admin.ModelAdmin):
+    list_display = ('viewer', 'viewed_user', 'timestamp')
+    date_hierarchy = 'timestamp'
+    search_fields = ('viewer__username', 'viewed_user__username')
 
-# ─── 5. POSTS (SOCIAL FEED) ───
+
+# ─── 5. DIRECT MESSAGING ───
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ('sender', 'receiver', 'is_read', 'timestamp')
+    list_filter = ('is_read', 'timestamp')
+    search_fields = ('sender__username', 'receiver__username', 'content')
+
+
+# ─── 6. POSTS (SOCIAL FEED) ───
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = ('author', 'views', 'created_at')
     search_fields = ('author__username', 'content')
     ordering = ('-created_at',)
 
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('author', 'post', 'created_at')
+    search_fields = ('author__username', 'content')
 
-# ─── 6. TOPIC GROUPS ───
+
+# ─── 7. TOPIC GROUPS ───
 @admin.register(TopicGroup)
 class TopicGroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'get_member_count')
@@ -66,3 +94,8 @@ class TopicGroupAdmin(admin.ModelAdmin):
     def get_member_count(self, obj):
         return obj.members.count()
     get_member_count.short_description = 'Total Members'
+
+@admin.register(GroupMessage)
+class GroupMessageAdmin(admin.ModelAdmin):
+    list_display = ('group', 'author', 'created_at')
+    search_fields = ('group__name', 'author__username', 'content')

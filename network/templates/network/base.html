@@ -6,9 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}A1 Networks{% endblock %}</title>    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/network.css' %}?v=11.0">
-
- 
+    <link rel="stylesheet" href="{% static 'css/network.css' %}?v=14.0">
 </head>
 <body>
 
@@ -77,22 +75,24 @@
         <span style="font-size: 1.8rem;">🤖</span>
     </button>
 
-    <div id="chatbot-window" class="glass-card" style="position: fixed; bottom: 100px; right: 30px; width: 350px; height: 450px; display: none; flex-direction: column; padding: 0; z-index: 1000; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
-        <div style="background: rgba(0,0,0,0.6); padding: 15px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="margin: 0; font-family: 'Outfit', sans-serif; color: var(--gold); font-size: 1.1rem;">Work Connect Assistant</h3>
-            <button id="chatbot-close" style="background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-size: 1.2rem;">✖</button>
-        </div>
-
-        <div id="chatbot-messages" style="flex-grow: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
-            <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid var(--gold); padding: 10px 15px; border-radius: 12px 12px 12px 0; color: var(--text-warm); align-self: flex-start; max-width: 85%; font-size: 0.95rem;">
-                Hi {{ request.user.first_name|default:"there" }}! I'm your networking assistant. Ask me anything!
+    <div id="chatbot-window" class="glass-card" style="position: fixed; bottom: 100px; right: 30px; width: 360px; height: 500px; display: none; flex-direction: column; padding: 0; z-index: 1000; overflow: hidden; border-radius: 24px; box-shadow: 0 15px 40px rgba(0,0,0,0.12); border: 1px solid rgba(255,255,255,0.8); background: #ffffff;">
+        
+        <div style="background: #f8fafc; padding: 18px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.5rem;">🤖</span>
+                <h3 style="margin: 0; font-family: 'Outfit', sans-serif; color: #0f172a; font-size: 1.1rem; font-weight: 700;">A1 Networs Assistant</h3>
             </div>
+            <button id="chatbot-close" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 1.2rem; transition: 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">✖</button>
         </div>
 
-        <div style="padding: 15px; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; background: rgba(0,0,0,0.3);">
-            <input type="text" id="chatbot-input" placeholder="Ask a question..." style="flex-grow: 1; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); padding: 10px 15px; border-radius: 20px; color: #fff; font-family: 'Inter', sans-serif; outline: none;">
-            <button id="chatbot-send" style="background: var(--gold); border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; color: #fff; font-weight: bold;">&uarr;</button>
+        <div id="chatbot-messages" style="flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #fafaf9;">
+            </div>
+
+        <div style="padding: 15px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; background: #ffffff;">
+            <input type="text" id="chatbot-input" placeholder="Ask a question..." style="flex-grow: 1; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 12px 18px; border-radius: 30px; color: #0f172a; font-family: 'Inter', sans-serif; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+            <button id="chatbot-send" style="background: var(--primary, #f59e0b); border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; color: #fff; font-weight: bold; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); transition: 0.2s; flex-shrink: 0;">&uarr;</button>
         </div>
+        
     </div>
 
     <div id="notification-toast" style="display:none; position: fixed; bottom: 20px; left: 20px; background: #ffffff; border-left: 5px solid #f59e0b; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 9999; min-width: 300px;">
@@ -130,25 +130,20 @@
             const data = JSON.parse(e.data);
             const toast = document.getElementById('notification-toast');
             
-            // Populate the data into the HTML
             document.getElementById('notif-title').innerText = data.job_title;
             document.getElementById('notif-msg').innerText = data.message;
             
-            // MAKE IT CLICKABLE!
             toast.style.cursor = 'pointer';
             toast.onclick = function() {
-                window.location.href = data.url; // Redirect to the job page
+                window.location.href = data.url; 
             };
 
-            // Add a little hover effect to show it's a link
             toast.onmouseover = function() { this.style.transform = 'scale(1.02)'; };
             toast.onmouseout = function() { this.style.transform = 'scale(1)'; };
             
-            // Show the Toast
             toast.style.display = 'block';
             toast.style.animation = 'slideIn 0.5s ease forwards';
 
-            // Auto-hide after 8 seconds (gives them a bit more time to click)
             setTimeout(() => { 
                 toast.style.display = 'none'; 
             }, 8000);
@@ -181,7 +176,9 @@
                 const text = chatInput.value.trim();
                 if (!text) return;
 
-                const userMsg = `<div style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); padding: 10px 15px; border-radius: 12px 12px 0 12px; color: #fff; align-self: flex-end; max-width: 85%; font-size: 0.95rem;">${text}</div>`;
+                // FIX: Swapped to 'overflow-wrap: break-word' and 'white-space: pre-wrap' so normal text looks perfect!
+                // Also updated the user bubble to use your primary brand color with white text.
+                const userMsg = `<div style="background: var(--primary, #f59e0b); padding: 10px 15px; border-radius: 15px 15px 0 15px; color: #fff; align-self: flex-end; max-width: 85%; font-size: 0.95rem; overflow-wrap: break-word; white-space: pre-wrap; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">${text}</div>`;
                 messagesArea.insertAdjacentHTML('beforeend', userMsg);
                 chatInput.value = '';
                 messagesArea.scrollTop = messagesArea.scrollHeight; 
@@ -200,7 +197,9 @@
                     
                     const data = await response.json();
                     
-                    const botMsg = `<div style="background: rgba(168, 85, 247, 0.1); border: 1px solid var(--gold); padding: 10px 15px; border-radius: 12px 12px 12px 0; color: var(--text-warm); align-self: flex-start; max-width: 85%; font-size: 0.95rem;">${data.reply || "Error thinking of a response."}</div>`;
+                    // FIX: Smart wrapping applied to the AI bubble too. 
+                    // Styled with a clean white/grey background and dark text for ultimate readability.
+                    const botMsg = `<div style="background: #f8fafc; border: 1px solid #e6a35b; padding: 10px 15px; border-radius: 15px 15px 15px 0; color: #2a260f; align-self: flex-start; max-width: 85%; font-size: 0.95rem; overflow-wrap: break-word; white-space: pre-wrap; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">${data.reply || "Error thinking of a response."}</div>`;
                     messagesArea.insertAdjacentHTML('beforeend', botMsg);
                     messagesArea.scrollTop = messagesArea.scrollHeight;
                     
@@ -208,7 +207,6 @@
                     console.error("Chat error:", error);
                 }
             };
-
             sendBtn.addEventListener('click', sendMessage);
             chatInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') sendMessage();

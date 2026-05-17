@@ -35,7 +35,8 @@ urlpatterns = [
     path('radar/', views.local_radar, name='local_radar'),
     path('toggle-radar/', views.toggle_availability, name='toggle_availability'),
     path('user/<str:username>/review/', views.leave_review, name='leave_review'),
-    path('analytics/', views.profile_analytics, name='profile_analytics'),
+    path('analytics/', views.analytics_dashboard, name='analytics'),
     path('connect/<str:username>/', views.send_request, name='send_request'),
     path('invite/<str:username>/', views.invite_to_job, name='invite_to_job'),
+    path('profile/<str:username>/analyze/', views.analyze_profile, name='analyze_profile'),
     ]
