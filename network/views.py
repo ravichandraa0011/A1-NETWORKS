@@ -2,12 +2,11 @@ import json
 import re
 from datetime import timedelta
 
-from django.db.models import Q, Sum, Count, Avg
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Sum, Count
+from django.db.models import Q, Sum, Count, Avg
 from django.db.models.functions import TruncDate
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -120,25 +119,27 @@ def send_request(request, username):
         target_user = get_object_or_404(User, username=username)
         
         if target_user == request.user:
-            return JsonResponse({"status": "error", "message": "Cannot connect with yourself."})
+            return JsonResponse({'status': 'error', 'message': "Cannot connect with yourself."})
             
         connection = Connection.objects.filter(sender=request.user, receiver=target_user).first()
         
         if connection:
             if not connection.is_accepted:
+                # Withdraw the request
                 connection.delete()
-                return JsonResponse({"status": "withdrawn", "message": "Request withdrawn."})
+                return JsonResponse({'status': 'withdrawn', 'message': 'Request withdrawn.'})
             else:
-                return JsonResponse({"status": "info", "message": "You are already connected."})
+                return JsonResponse({'status': 'info', 'message': 'You are already connected.'})
         else:
             reverse_conn = Connection.objects.filter(sender=target_user, receiver=request.user).exists()
             if reverse_conn:
-                 return JsonResponse({"status": "info", "message": "They already sent you a request!"})
-                 
-            Connection.objects.create(sender=request.user, receiver=target_user, is_accepted=False)
-            return JsonResponse({"status": "sent", "message": "Request sent!"})
-            
-    return JsonResponse({"status": "error", "message": "Invalid request."})
+                 return JsonResponse({'status': 'info', 'message': 'They already sent you a request!'})
+            else:
+                # Send the request
+                Connection.objects.create(sender=request.user, receiver=target_user, is_accepted=False)
+                return JsonResponse({'status': 'sent', 'message': 'Request sent!'})
+                
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
 @login_required
 def accept_request(request, connection_id):
@@ -258,7 +259,6 @@ def profile_view(request, username):
     user_jobs = Job.objects.filter(posted_by=profile_user, is_active=True).order_by('-created_at')
     projects = ProjectPortfolio.objects.filter(owner=profile_user).prefetch_related('reviews__reviewer').order_by('-created_at')
 
-    # ─── NEW: FETCH REVIEWS & CHECK STATUS ───
     user_reviews = Review.objects.filter(receiver=profile_user).order_by('-created_at')
     
     has_reviewed = False
@@ -274,9 +274,9 @@ def profile_view(request, username):
         'user_posts': user_posts, 
         'user_jobs': user_jobs,
         'projects': projects,
-        'user_reviews': user_reviews,                  # Pass reviews to HTML
-        'has_reviewed': has_reviewed,                  # Pass hide/show status
-        'average_rating': round(average_rating, 1),    # Pass the math
+        'user_reviews': user_reviews,
+        'has_reviewed': has_reviewed,
+        'average_rating': round(average_rating, 1),
     }
     return render(request, 'network/profile.html', context)
 
@@ -431,7 +431,6 @@ def analytics_dashboard(request):
      .annotate(count=Count('id')) \
      .order_by('date')
 
-   # ... your existing logic above ...
     dates = [(seven_days_ago + timedelta(days=i)).strftime('%b %d') for i in range(8)]
     counts_dict = {dv['date'].strftime('%b %d'): dv['count'] for dv in daily_views if dv['date']}
     chart_data = [counts_dict.get(d, 0) for d in dates]
@@ -442,12 +441,13 @@ def analytics_dashboard(request):
         'total_post_views': total_post_views,
         'view_count': recent_views.count(),
         'recent_views': recent_views,
-        'dates': dates,               # Removed json.dumps!
-        'chart_data': chart_data      # Removed json.dumps!
+        'dates': json.dumps(dates),        # Re-added json.dumps for the template
+        'chart_data': json.dumps(chart_data) # Re-added json.dumps for the template
     }
     return render(request, 'network/analytics.html', context)
 
-# ─── AI CHATBOT ───────────────────────────────────────
+
+# ─── AI CHATBOT & PROFILE ROAST ───────────────────────
 @login_required
 def chatbot_response(request):
     if request.method == 'POST':
@@ -492,6 +492,8 @@ def chatbot_response(request):
             return JsonResponse({'reply': "Rebooting my AI brain. Please try again in 10 seconds!"})
 
     return JsonResponse({'error': 'POST only'}, status=400)
+
+
 @login_required
 def analyze_profile(request, username):
     if request.user.username != username:
@@ -499,15 +501,12 @@ def analyze_profile(request, username):
 
     if request.method == 'POST':
         try:
-            # 1. Gather the User's Data (Safely!)
             profile = getattr(request.user, 'profile', None)
             headline = profile.headline if profile else "No headline"
             
-            # Get their project titles
             projects = ProjectPortfolio.objects.filter(owner=request.user)
             project_list = ", ".join([p.title for p in projects]) if projects else "No projects added yet"
 
-            # 2. Build the exact Prompt for Gemini
             ai_prompt = f"""
             You are a tough but supportive Senior Tech Recruiter in Silicon Valley. 
             Analyze this candidate's profile:
@@ -520,7 +519,6 @@ def analyze_profile(request, username):
             **🚀 The Boost:** (Give 2 actionable, specific bullet points on what they should build or add next to get hired).
             """
 
-            # 3. Call Gemini with the Fallback Loop
             client = genai.Client(api_key=settings.GEMINI_API_KEY)
             models_to_try = [
                 'gemini-2.5-flash-lite', 
@@ -537,7 +535,7 @@ def analyze_profile(request, username):
                     )
                     if response and response.text:
                         response_text = response.text
-                        break # It worked!
+                        break 
                 except Exception as model_err:
                     print(f"Model {model_name} failed: {model_err}")
                     continue 
@@ -545,7 +543,6 @@ def analyze_profile(request, username):
             if not response_text:
                 return JsonResponse({'error': 'All AI models are currently busy. Please try again in 1 minute!'})
 
-            # Format the text with HTML so it looks pretty
             formatted_text = response_text.replace('\n', '<br>')
             return JsonResponse({'analysis': formatted_text})
 

@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import dj_database_url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -111,7 +112,7 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'accounts:login'
 # settings.py
-GEMINI_API_KEY = "AIzaSyAqX0q1Bb7TllGibCJa_gdOsigjST8Ecmo"
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 # settings.py
 
 CHANNEL_LAYERS = {

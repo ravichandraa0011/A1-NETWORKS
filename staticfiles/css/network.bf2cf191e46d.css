@@ -1,0 +1,163 @@
+/* 1. Import Crisp & Friendly Corporate Fonts (Poppins & Inter) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap');
+
+:root {
+    /* ─── THE CIVI EMERALD PALETTE ─── */
+    --primary-teal: #059669; /* The exact vibrant Emerald/Teal from the image */
+    --primary-hover: #047857;
+    
+    --navy-dark: #111827; /* Very dark slate for high-contrast headings */
+    --text-main: #475569; /* Soft dark gray for reading */
+    --text-muted: #94a3b8; /* Lighter gray for dates/locations */
+    
+    --bg-page: #f4fbf9; /* A very pale, icy mint/white background */
+    --card-bg: #ffffff; /* Pure white cards */
+    --border-light: #e2e8f0; /* Crisp, delicate borders */
+    
+    /* Hijacking old variables to prevent your HTML from breaking */
+    --gold: #059669; 
+    --green: #059669;
+    --red: #ef4444;
+}
+
+/* 2. Soft Mint-White Background */
+body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--bg-page);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* 3. Bold, Friendly Typography */
+* { font-family: 'Inter', sans-serif; }
+
+h1, h2, h3, h4, h5, .glass-title {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.3px !important;
+    color: var(--navy-dark) !important;
+    background: none !important;
+    -webkit-text-fill-color: var(--navy-dark) !important;
+}
+
+/* 4. Paper-Flat White Cards */
+.glass-card {
+    background: var(--card-bg) !important;
+    backdrop-filter: none !important; /* Removes all glass blur */
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important; /* Extremely soft shadow */
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06) !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* 5. Emerald Pill Buttons */
+.glass-btn {
+    background: var(--primary-teal) !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 12px 32px !important;
+    border-radius: 50px !important; /* Fully rounded pill shape */
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2) !important;
+    text-transform: none !important;
+    letter-spacing: 0px;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.glass-btn:hover {
+    transform: translateY(-2px);
+    background: var(--primary-hover) !important;
+    box-shadow: 0 6px 16px rgba(5, 150, 105, 0.3) !important;
+}
+
+/* Outlined Buttons */
+.glass-btn[style*="background: transparent"] {
+    background: transparent !important;
+    border: 2px solid var(--primary-teal) !important;
+    color: var(--primary-teal) !important;
+    box-shadow: none !important;
+    -webkit-text-fill-color: var(--primary-teal) !important;
+}
+.glass-btn[style*="background: transparent"]:hover {
+    background: rgba(5, 150, 105, 0.05) !important;
+}
+
+/* 6. Rounded Pill Inputs */
+.glass-input, input[type="text"], input[type="email"], input[type="password"], select {
+    background: #ffffff !important;
+    border: 1px solid var(--border-light) !important;
+    color: var(--navy-dark) !important;
+    border-radius: 50px !important; /* Pill shaped inputs */
+    padding: 14px 24px !important;
+    font-size: 1rem !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.01);
+}
+
+textarea {
+    background: #ffffff !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: 16px !important;
+    padding: 16px 20px !important;
+    color: var(--navy-dark) !important;
+}
+
+.glass-input:focus, input:focus, textarea:focus {
+    outline: none !important;
+    border-color: var(--primary-teal) !important;
+    box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.15) !important;
+}
+
+/* 7. Clean White Navbar */
+nav {
+    background: #ffffff !important;
+    border-bottom: 1px solid var(--border-light) !important;
+    box-shadow: none !important;
+    padding: 15px 5% !important;
+}
+
+.nav-logo {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 1.6rem !important;
+    color: var(--navy-dark) !important;
+    letter-spacing: -0.5px;
+    background: none !important;
+    -webkit-text-fill-color: var(--navy-dark) !important;
+}
+
+.nav-links a {
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 0.95rem !important;
+    color: var(--text-main) !important;
+    transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+    color: var(--primary-teal) !important;
+}
+
+/* 8. Force Light Theme Overrides */
+[style*="color: #fff"], [style*="color: white"], [style*="color: #ffffff"], 
+[style*="color: var(--text-warm)"], [style*="color: var(--text-dim)"] {
+    color: var(--text-main) !important;
+    -webkit-text-fill-color: var(--text-main) !important;
+}
+
+[style*="background: rgba(0,0,0"] {
+    background: #f8fafc !important; /* Soft gray for inner containers */
+    border: 1px solid var(--border-light) !important;
+}

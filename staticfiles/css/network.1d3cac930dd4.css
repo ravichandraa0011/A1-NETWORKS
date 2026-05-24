@@ -1,0 +1,150 @@
+/* 1. Import Crisp Corporate Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap');
+
+:root {
+    --primary: #059669; /* Emerald Green */
+    --primary-hover: #047857;
+    --bg-page: #f4fbf9; /* Soft Mint/White */
+    --card-bg: #ffffff;
+    --border-light: #e2e8f0;
+    
+    --text-dark: #0f172a;
+    --text-muted: #475569;
+    
+    /* Overrides for old inline vars */
+    --gold: #059669; 
+    --green: #059669;
+    --glass-border: #e2e8f0;
+}
+
+body {
+    background-color: var(--bg-page) !important;
+    color: var(--text-dark) !important;
+    font-family: 'Inter', sans-serif !important;
+    margin: 0; 
+    min-height: 100vh;
+}
+
+* { 
+    font-family: 'Inter', sans-serif; 
+    box-sizing: border-box; 
+}
+
+h1, h2, h3, h4, h5, .glass-title {
+    font-family: 'Poppins', sans-serif !important;
+    color: var(--text-dark) !important;
+    -webkit-text-fill-color: var(--text-dark) !important;
+    background: none !important;
+    font-weight: 700 !important;
+    text-shadow: none !important;
+    margin-top: 0;
+}
+
+/* ─── 1. COMPACT, PROFESSIONAL CARDS ─── */
+.glass-card {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02) !important; 
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    color: var(--text-muted) !important;
+    padding: 20px !important; /* Tightened padding */
+    margin-bottom: 20px !important; 
+}
+
+.glass-card p, .glass-card span, .glass-card label, .glass-card div {
+    color: var(--text-muted) !important;
+    -webkit-text-fill-color: initial !important; 
+    text-shadow: none !important;
+}
+.glass-card strong, .glass-card h1, .glass-card h2, .glass-card h3 { 
+    color: var(--text-dark) !important; 
+}
+
+/* Add a clean gray background to the profile banner if the image is missing */
+.glass-card > div[style*="height: 200px"] {
+    background-color: #cbd5e1 !important;
+}
+
+/* ─── 2. SLIMMER, CLEANER INPUTS ─── */
+input[type="text"], input[type="email"], input[type="password"], textarea, select, .glass-input {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: var(--text-dark) !important;
+    border-radius: 6px !important; 
+    padding: 10px 14px !important; /* Slimmer height */
+    font-size: 0.9rem !important; 
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.01) !important;
+}
+input:focus, textarea:focus, select:focus {
+    border-color: var(--primary) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15) !important;
+}
+
+/* ─── 3. PERFECTLY SCALED BUTTONS ─── */
+.glass-btn, button[type="submit"] {
+    background: var(--primary) !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 8px 20px !important; /* Shrunk padding */
+    border-radius: 50px !important; 
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 0.85rem !important; 
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(5, 150, 105, 0.15) !important;
+    display: inline-flex !important;
+    width: auto !important; 
+    flex: 0 1 auto !important; 
+    align-items: center !important;
+    justify-content: center !important;
+    -webkit-text-fill-color: #ffffff !important;
+    text-decoration: none !important;
+    margin: 4px;
+}
+.glass-btn:hover, button[type="submit"]:hover {
+    background: var(--primary-hover) !important;
+    transform: translateY(-1px);
+}
+
+.glass-btn[style*="transparent"] {
+    background: #ffffff !important;
+    border: 1px solid var(--primary) !important; 
+    color: var(--primary) !important;
+    -webkit-text-fill-color: var(--primary) !important;
+    box-shadow: none !important;
+}
+.glass-btn[style*="transparent"]:hover {
+    background: rgba(5, 150, 105, 0.05) !important;
+}
+
+/* ─── 4. TIGHTER NAVBAR ─── */
+nav, .nav-glass {
+    background: #ffffff !important;
+    border-bottom: 1px solid var(--border-light) !important;
+    padding: 12px 5% !important; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+}
+.nav-logo { 
+    color: var(--primary) !important; 
+    -webkit-text-fill-color: var(--primary) !important; 
+    font-size: 1.3rem !important; 
+    text-decoration: none; 
+    font-weight: 800 !important;
+}
+.nav-links { display: flex; gap: 15px; align-items: center; }
+.nav-links a { color: var(--text-muted) !important; text-decoration: none; font-weight: 500; font-size: 0.9rem;}
+.nav-links a:hover { color: var(--primary) !important; }
+
+/* ─── 5. KILL OLD DARK MODE INLINE STYLES ─── */
+[style*="rgba(0,0,0"], [style*="rgba(0, 0, 0"], 
+[style*="rgba(255,255,255,0.1)"] {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+}

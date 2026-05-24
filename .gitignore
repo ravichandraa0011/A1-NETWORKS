@@ -9,5 +9,8 @@ venv/
 # Local Database
 db.sqlite3
 
-# Static files directory
-staticfiles/
+
+# media files 
+media/
+
+.env

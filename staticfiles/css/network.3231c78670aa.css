@@ -1,0 +1,182 @@
+/* 1. Import The Ultimate Premium Tech Font */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    /* ─── THE MIDNIGHT SILK PALETTE ─── */
+    --gold: #8b5cf6; /* Electric Violet for striking accents */
+    --gold-glow: rgba(139, 92, 246, 0.5);
+    
+    --text-warm: #ffffff; /* Pure crisp white */
+    --text-dim: #94a3b8; /* Elegant slate gray */
+    
+    --glass-bg: rgba(15, 23, 42, 0.4); /* Deep smoked glass */
+    --glass-border: rgba(255, 255, 255, 0.06); /* Invisible sides */
+    --glass-highlight: rgba(255, 255, 255, 0.15); /* Top edge light reflection */
+    
+    --green: #10b981;
+    --red: #f43f5e;
+}
+
+/* 2. The Hypnotic Animated Background */
+body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: #020617; /* Abyss Black */
+    color: var(--text-warm);
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    overflow-x: hidden;
+    position: relative;
+    z-index: 0;
+}
+
+/* The Breathing Nebula Orbs */
+body::before, body::after {
+    content: '';
+    position: fixed;
+    width: 70vw;
+    height: 70vw;
+    border-radius: 50%;
+    filter: blur(140px); /* Massive blur for smooth light */
+    z-index: -1;
+    animation: floatOrb 25s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+body::before {
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 60%);
+    top: -20%;
+    left: -10%;
+}
+
+body::after {
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 60%);
+    bottom: -20%;
+    right: -10%;
+    animation-delay: -12s; /* Desyncs the breathing */
+}
+
+@keyframes floatOrb {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(8%, 8%) scale(1.15); }
+}
+
+/* 3. Elite Typography */
+* { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+h1, h2, h3, h4, h5, .glass-title {
+    font-weight: 800 !important;
+    letter-spacing: -0.5px !important;
+    /* Liquid Chrome Text Effect */
+    background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 15px;
+}
+
+/* 4. Polished Smoked Glass Cards */
+.glass-card {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--glass-border) !important;
+    border-top: 1px solid var(--glass-highlight) !important; /* Premium top-light reflection */
+    border-radius: 20px !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+    transform: translateY(-4px);
+    border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.9), 0 0 40px rgba(139, 92, 246, 0.1) !important;
+}
+
+/* 5. Magnetic Neon Buttons */
+.glass-btn {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    padding: 12px 28px !important;
+    border-radius: 50px !important; 
+    font-weight: 700 !important;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255,255,255,0.4) !important;
+    text-transform: none !important;
+    letter-spacing: 0.5px;
+    -webkit-text-fill-color: white !important;
+}
+
+.glass-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.7), inset 0 1px 0 rgba(255,255,255,0.6) !important;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+}
+
+/* Outlined Buttons */
+.glass-btn[style*="background: transparent"] {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid rgba(139, 92, 246, 0.5) !important;
+    color: #c4b5fd !important;
+    box-shadow: none !important;
+    -webkit-text-fill-color: #c4b5fd !important;
+}
+.glass-btn[style*="background: transparent"]:hover {
+    background: rgba(139, 92, 246, 0.15) !important;
+    border-color: #c4b5fd !important;
+}
+
+/* 6. Deep Carved Inputs */
+.glass-input, input[type="text"], input[type="email"], input[type="password"], textarea, select {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-top: 1px solid rgba(0,0,0,0.8) !important; /* Creates an inset/carved look */
+    color: white !important;
+    border-radius: 12px !important;
+    padding: 14px 18px !important;
+    font-size: 1rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: inset 0 4px 6px rgba(0,0,0,0.3);
+}
+.glass-input:focus, input:focus, textarea:focus {
+    outline: none !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3), inset 0 4px 6px rgba(0,0,0,0.3) !important;
+}
+
+/* 7. Stealth Navigation Bar */
+nav {
+    background: rgba(2, 6, 23, 0.6) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.nav-logo {
+    font-weight: 800 !important;
+    font-size: 1.6rem !important;
+    background: linear-gradient(to right, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+}
+
+.nav-links a {
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    color: var(--text-dim) !important;
+    transition: all 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: #ffffff !important;
+    text-shadow: 0 0 10px rgba(255,255,255,0.3);
+}
+
+/* 8. Force Dark Mode Colors */
+[style*="color: #fff"], [style*="color: white"], [style*="color: #ffffff"] {
+    color: var(--text-warm) !important;
+    -webkit-text-fill-color: var(--text-warm) !important;
+}
