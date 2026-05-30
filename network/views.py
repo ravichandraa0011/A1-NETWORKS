@@ -1,6 +1,7 @@
 import json
 import re
 from datetime import timedelta
+from django.db.models import Q
 
 from django.conf import settings
 from django.contrib import messages
@@ -27,7 +28,7 @@ from jobs.models import Job, JobApplication
 User = get_user_model()
 
 
-# ─── FEED & POSTS ───────────────────────────────────────
+## ─── FEED & POSTS ───────────────────────────────────────
 @login_required
 def feed(request):
     latest_jobs = Job.objects.filter(is_active=True).exclude(posted_by=request.user).order_by('-created_at')[:5]
@@ -38,20 +39,44 @@ def feed(request):
     ).order_by('-created_at')
 
     if request.method == 'POST':
-        content = request.POST.get('content')
-        if content:
-            post = Post.objects.create(author=request.user, content=content)
+        # Default to empty string so empty reposts don't break the hashtag scanner
+        content = request.POST.get('content', '')
+        
+        # 1. Grab image, video, AND the hidden repost_id
+        image = request.FILES.get('image')
+        video = request.FILES.get('video')
+        repost_id = request.POST.get('repost_id')
+        
+        # 2. Allow the post if it has content, an image, a video, OR is a repost
+        if content or image or video or repost_id: 
+            post = Post.objects.create(
+                author=request.user, 
+                content=content,
+                image=image,
+                video=video 
+            )
             
-            hashtags = re.findall(r'#(\w+)', content)
-            for tag in hashtags:
-                group = TopicGroup.objects.filter(name__iexact=tag).first()
-                if not group:
-                    group = TopicGroup.objects.create(
-                        name=tag, 
-                        description=f"Community driven discussion about #{tag}"
-                    )
-                if request.user not in group.members.all():
-                    group.members.add(request.user)
+            # 3. IF it's a repost, link it to the original post in the database
+            if repost_id:
+                try:
+                    original_post = Post.objects.get(id=repost_id)
+                    post.repost_of = original_post
+                    post.save()
+                except Post.DoesNotExist:
+                    pass # Failsafe in case the original post was deleted
+            
+            # 4. Process hashtags ONLY if text was actually typed
+            if content:
+                hashtags = re.findall(r'#(\w+)', content)
+                for tag in hashtags:
+                    group = TopicGroup.objects.filter(name__iexact=tag).first()
+                    if not group:
+                        group = TopicGroup.objects.create(
+                            name=tag, 
+                            description=f"Community driven discussion about #{tag}"
+                        )
+                    if request.user not in group.members.all():
+                        group.members.add(request.user)
                     
             return redirect('network:feed')
     
@@ -69,11 +94,22 @@ def feed(request):
 
 @login_required
 def like_post(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    if request.user in post.likes.all():
-        post.likes.remove(request.user)
-    else:
-        post.likes.add(request.user)
+    if request.method == 'POST':
+        post = get_object_or_404(Post, id=post_id)
+        
+        if request.user in post.likes.all():
+            post.likes.remove(request.user)
+            liked = False
+        else:
+            post.likes.add(request.user)
+            liked = True
+            
+        # Instead of reloading the page, we quietly send back the new count!
+        return JsonResponse({
+            'liked': liked, 
+            'like_count': post.likes.count()
+        })
+        
     return redirect('network:feed')
 
 @login_required
@@ -90,6 +126,7 @@ def add_comment(request, post_id):
         content = request.POST.get('content')
         if content:
             Comment.objects.create(post=post, author=request.user, content=content)
+    # Added redirect so the form submission actually refreshes the page!
     return redirect('network:feed')
 
 
@@ -190,19 +227,33 @@ def inbox(request, username=None):
 
 
 # ─── DIRECTORY & PROFILE ──────────────────────────────
+from django.db.models import Q
+
 @login_required
 def directory(request):
     query = request.GET.get('q', '')
-    users = User.objects.filter(
-        is_active=True, 
-        is_superuser=False
-    ).exclude(id=request.user.id)
+    
+    # Start with all active, non-superuser users
+    users = User.objects.filter(is_active=True, is_superuser=False).exclude(id=request.user.id)
     
     if query:
+        # We now search BOTH the User model fields AND the Profile model fields
         users = users.filter(
-            Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(profile__headline__icontains=query)
-        )
+            Q(first_name__icontains=query) | 
+            Q(last_name__icontains=query) | 
+            Q(username__icontains=query) |
+            # Searching User Model fields (where your Skills and Industry are!)
+            Q(core_skills__icontains=query) | 
+            Q(headline__icontains=query) | 
+            # Searching Profile Model fields
+            Q(profile__headline__icontains=query) 
+        ).distinct()
     
+    # ... rest of your existing connection logic ...# <--- ADD THIS LINE
+    
+    # ... rest of your code ...# CRITICAL: Prevents a user showing up twice if their name AND headline match!
+    
+    # 3. Your existing connection logic ( untouched! )
     my_connections = Connection.objects.filter(
         Q(sender=request.user) | Q(receiver=request.user)
     )
@@ -386,6 +437,15 @@ def add_project(request):
     else:
         form = ProjectForm()
     return render(request, 'network/add_project.html', {'form': form})
+@login_required
+def delete_project(request, project_id):
+    if request.method == 'POST':
+        # Safely find the project ONLY if the currently logged-in user owns it
+        project = get_object_or_404(ProjectPortfolio, id=project_id, owner=request.user)
+        project.delete()
+        messages.success(request, "Project deleted successfully.")
+        
+    return redirect('network:profile', username=request.user.username)
 
 @login_required
 def portfolio_maker(request, username):
@@ -551,3 +611,20 @@ def analyze_profile(request, username):
             return JsonResponse({'error': 'The AI is currently resting. Try again in a moment!'})
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
+@login_required
+def edit_project(request, project_id):
+    # Fetch the project ONLY if the current user owns it
+    project = get_object_or_404(ProjectPortfolio, id=project_id, owner=request.user)
+    
+    if request.method == 'POST':
+        # Pass the existing project instance to the form so it OVERWRITES instead of creating a new one
+        form = ProjectForm(request.POST, instance=project)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Project updated successfully!")
+            return redirect('network:profile', username=request.user.username)
+    else:
+        # Pre-fill the form with the current data
+        form = ProjectForm(instance=project)
+        
+    return render(request, 'network/edit_project.html', {'form': form, 'project': project})

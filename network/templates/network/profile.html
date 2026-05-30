@@ -27,9 +27,12 @@
                     <span style="color: var(--primary); font-size: 1.2rem; vertical-align: middle;" title="Verified Professional">✓</span>
                 {% endif %}
             </h1>
-            
             <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 15px; font-style: italic;">
-                {{ profile_user.headline|default:"Professional in the Industry" }}
+               {% if profile_user.profile.headline %}
+                   {{ profile_user.profile.headline }}
+               {% else %}
+                   {{ profile_user.headline|default:"Professional in the Industry" }}
+               {% endif %}
             </p>
 
             <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 25px;">
@@ -155,10 +158,29 @@
 
         {% for project in projects %}
             <div class="glass-card" style="padding: 30px; margin-bottom: 25px;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                    <h3 style="font-size: 1.4rem; margin: 0; color: var(--text-dark);">{{ project.title }}</h3>
-                    {% if project.is_peer_reviewed %}
-                        <span style="background: rgba(5, 150, 105, 0.1); color: var(--primary); padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: 1px solid var(--primary);">✓ Peer Reviewed</span>
+               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <h3 style="font-size: 1.4rem; margin: 0; color: var(--text-dark);">{{ project.title }}</h3>
+                        {% if project.is_peer_reviewed %}
+                            <span style="background: rgba(5, 150, 105, 0.1); color: var(--primary); padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: 1px solid var(--primary);">✓ Peer Reviewed</span>
+                        {% endif %}
+                    </div>
+                    
+                  {% if request.user == profile_user %}
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <a href="{% url 'network:edit_project' project.id %}" style="text-decoration: none;">
+                                <button type="button" style="background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.2s;" onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
+                                    ✏️ Edit
+                                </button>
+                            </a>
+                            
+                            <form method="POST" action="{% url 'network:delete_project' project.id %}" onsubmit="return confirm('Are you sure you want to delete this project?');" style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" style="background: #fef2f2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+                                    🗑️ Delete
+                                </button>
+                            </form>
+                        </div>
                     {% endif %}
                 </div>
                 

@@ -9,6 +9,13 @@ class Profile(models.Model):
     headline = models.CharField(max_length=255, blank=True)
     is_available_today = models.BooleanField(default=False) 
 
+    def save(self, *args, **kwargs):
+        # Every time you save the profile, grab the headline from the user model 
+        # and copy it into the profile headline if the profile one is empty
+        if not self.headline and hasattr(self.user, 'headline'):
+            self.headline = self.user.headline
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.user.username
 
@@ -45,12 +52,10 @@ class Connection(models.Model):
 
 # ─── PROFILE VIEWS (ANALYTICS) ───
 class ProfileView(models.Model):
-    # FIXED: Replaced "User" with settings.AUTH_USER_MODEL
     viewer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='views_made')
     viewed_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='views_received')
     timestamp = models.DateTimeField(auto_now_add=True)
 
-    # FIXED: Removed the unique_together Meta class and the duplicate string method!
     def __str__(self):
         return f"{self.viewer.username} viewed {self.viewed_user.username}"
 
@@ -110,6 +115,10 @@ class Post(models.Model):
     views = models.PositiveIntegerField(default=0)
     likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='liked_posts', blank=True)
     image = models.ImageField(upload_to='post_images/', blank=True, null=True)
+    
+    # NEW: Added the video field here!
+    video = models.FileField(upload_to='post_videos/', blank=True, null=True) 
+    repost_of = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='reposts')
     
     def __str__(self):
         return f"Post by {self.author.username}"

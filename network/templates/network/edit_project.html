@@ -1,0 +1,46 @@
+{% extends 'network/base.html' %}
+{% block title %}Edit Project | A1 Networks{% endblock %}
+
+{% block content %}
+<div class="main-container" style="max-width: 600px; margin: 50px auto;">
+    <div class="glass-card" style="padding: 40px;">
+        <h2 style="font-size: 1.8rem; color: var(--text-dark); margin-top: 0; margin-bottom: 25px;">✏️ Edit Project</h2>
+        
+        <form method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label style="color: var(--text-dark); font-weight: 600; font-size: 0.95rem;">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small style="color: var(--text-muted); font-size: 0.8rem;">{{ field.help_text }}</small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <div style="display: flex; gap: 15px; margin-top: 20px;">
+                <button type="submit" class="glass-btn">Save Changes</button>
+                <a href="{% url 'network:profile' user.username %}" class="glass-btn" style="background: #f1f5f9 !important; color: #64748b !important; border: 1px solid #cbd5e1 !important; text-decoration: none; text-align: center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Make the form inputs match your glass theme */
+    input[type="text"], input[type="url"], textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        background: #f8fafc;
+        outline: none;
+        font-family: 'Inter', sans-serif;
+    }
+    input[type="text"]:focus, input[type="url"]:focus, textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+</style>
+{% endblock %}

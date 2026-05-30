@@ -1,21 +1,77 @@
 {% extends 'network/base.html' %}
 
 {% block content %}
+<style>
+    #toast-container { visibility: hidden; min-width: 250px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); color: #fff; text-align: center; border-radius: 12px; padding: 16px 24px; position: fixed; z-index: 9999; left: 50%; bottom: -50px; transform: translateX(-50%); font-size: 0.95rem; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border: 1px solid rgba(255,255,255,0.1); }
+    #toast-container.show { visibility: visible; opacity: 1; bottom: 40px; }
+/* Sleek Modern Action Buttons (FIXED OVERRIDES) */
+    .action-bar-btn {
+        background: transparent !important;
+        color: var(--text-muted) !important;
+        border: 1px solid transparent !important; /* Made transparent to match your other buttons */
+        border-radius: 50px;
+        padding: 8px 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex-grow: 1;
+    }
+    .action-bar-btn:hover {
+        background: rgba(245, 158, 11, 0.1) !important;
+        color: var(--primary) !important;
+    }
+    .action-bar-btn.active-liked {
+        background: var(--primary) !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+    }
+    /* Profile Link Hover Effect */
+    .profile-link {
+        text-decoration: none;
+        color: inherit;
+        transition: 0.2s ease;
+    }
+    .profile-link:hover h3, .profile-link:hover strong {
+        color: var(--primary) !important;
+        text-decoration: underline;
+    }
+    /* Embedded Repost Styling */
+    .repost-card { border: 1px solid var(--border-light); border-radius: 12px; padding: 15px; margin-top: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.02); }
+</style>
+
 <div style="max-width: 750px; margin: 40px auto; padding: 0 20px;">
     
     <div class="glass-card" style="padding: 30px; margin-bottom: 40px;">
         <h2 style="font-size: 1.3rem; margin-top: 0; margin-bottom: 15px; color: var(--text-dark);">Share an Update</h2>
         
-        <form method="POST" action="{% url 'network:feed' %}" enctype="multipart/form-data">
+        <form method="POST" action="{% url 'network:feed' %}" enctype="multipart/form-data" id="main-post-form" onsubmit="const btn = document.getElementById('post-submit-btn'); btn.style.pointerEvents = 'none'; btn.innerText = 'Posting...'; btn.style.opacity = '0.7';">
             {% csrf_token %}
-            <textarea name="content" rows="3" class="glass-input" placeholder="Share your latest achievements, projects, or thoughts..." style="width: 100%; resize: none; margin-bottom: 15px; border-radius: 12px;"></textarea>
+            <input type="hidden" name="repost_id" id="repost-id-input" value="">
             
+            <textarea name="content" rows="3" class="glass-input" placeholder="What's on your mind, {{ request.user.first_name }}?" style="width: 100%; resize: none; margin-bottom: 15px; border-radius: 12px;"></textarea>
+            
+            <div id="repost-preview" style="display: none; border-left: 4px solid var(--primary); padding-left: 15px; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted);">
+                <span id="repost-preview-text"></span>
+                <button type="button" onclick="document.getElementById('repost-preview').style.display='none'; document.getElementById('repost-id-input').value='';" style="background:none; border:none; color: var(--red); cursor:pointer; font-weight:bold; margin-left:10px;">✕ Remove</button>
+            </div>
+
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
-                <div style="flex-grow: 1;">
-                    <input type="file" name="image" accept="image/*" style="margin: 0;">
+                <div style="display: flex; gap: 15px;">
+                    <label id="photo-label" style="cursor: pointer; color: var(--primary); font-size: 0.95rem; font-weight: 600; padding: 8px 12px; border-radius: 8px; background: rgba(245, 158, 11, 0.1); transition: 0.2s; border: 1px solid transparent;">
+                        <span id="photo-text">📷 Photo</span>
+                        <input type="file" id="photo-input" name="image" accept="image/*" style="display: none;">
+                    </label>
+                    <label id="video-label" style="cursor: pointer; color: #3b82f6; font-size: 0.95rem; font-weight: 600; padding: 8px 12px; border-radius: 8px; background: rgba(59, 130, 246, 0.1); transition: 0.2s; border: 1px solid transparent;">
+                        <span id="video-text">🎥 Video</span>
+                        <input type="file" id="video-input" name="video" accept="video/mp4,video/x-m4v,video/*" style="display: none;">
+                    </label>
                 </div>
-                
-                <button type="submit" class="glass-btn" style="white-space: nowrap;">Post Update</button>
+                <button type="submit" id="post-submit-btn" class="glass-btn" style="white-space: nowrap;">Post Update</button>
             </div>
         </form>
     </div>
@@ -23,54 +79,100 @@
     {% for post in posts %}
     <div class="glass-card" style="margin-bottom: 30px; padding: 30px;">
         
-       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-            
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="width: 45px; height: 45px; border-radius: 50%; background: rgba(245, 158, 11, 0.1); border: 1px solid var(--primary); display: flex; align-items: center; justify-content: center;">
-                    <strong style="color: var(--primary); font-size: 1.1rem;">{{ post.author.first_name|first }}{{ post.author.last_name|first }}</strong>
-                </div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+           <div style="display: flex; align-items: center; gap: 15px;">
+                
+                <a href="{% url 'network:profile' post.author.username %}" class="profile-link" style="text-decoration: none;">
+                    <div style="width: 45px; height: 45px; border-radius: 50%; background: rgba(245, 158, 11, 0.1); border: 1px solid var(--primary); display: flex; align-items: center; justify-content: center;">
+                        <strong style="color: var(--primary); font-size: 1.1rem; transition: 0.2s;">{{ post.author.first_name|first }}{{ post.author.last_name|first }}</strong>
+                    </div>
+                </a>
+                
                 <div>
-                    <h3 style="font-size: 1.1rem; margin: 0; color: var(--text-dark); font-weight: 700;">{{ post.author.first_name }} {{ post.author.last_name }}</h3>
-                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 2px 0 0 0; font-weight: 500;">{{ post.created_at|timesince }} ago</p>
+                    <a href="{% url 'network:profile' post.author.username %}" class="profile-link">
+                        <h3 style="font-size: 1.1rem; margin: 0; color: var(--text-dark); font-weight: 700; transition: 0.2s;">{{ post.author.first_name }} {{ post.author.last_name }}</h3>
+                    </a>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 2px 0 0 0; font-weight: 500;">
+                        {{ post.created_at|timesince }} ago
+                        {% if post.repost_of %} • <span style="color: var(--primary); font-weight: 600;">🔁 Reposted</span>{% endif %}
+                    </p>
                 </div>
             </div>
-
             {% if post.author == request.user %}
-            <form method="POST" action="{% url 'network:delete_post' post.id %}" onsubmit="return confirm('Are you sure you want to delete this post? This cannot be undone.');">
+            <form method="POST" action="{% url 'network:delete_post' post.id %}" onsubmit="return confirm('Are you sure you want to delete this post?');">
                 {% csrf_token %}
-                <button type="submit" style="background: rgba(239, 68, 68, 0.05); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); padding: 6px 14px; border-radius: 50px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s ease;">
-                    Delete
-                </button>
+                <button type="submit" style="background: rgba(239, 68, 68, 0.05); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); padding: 6px 14px; border-radius: 50px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">Delete</button>
             </form>
             {% endif %}
-
         </div>
         
-        <p class="post-content" style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 20px; color: var(--text-dark); white-space: pre-wrap;">{{ post.content }}</p>
-        
-        {% if post.image %}
-        <div style="margin-bottom: 20px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-light); box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-            <img src="{{ post.image.url }}" alt="Post Attachment" style="width: 100%; height: auto; display: block; max-height: 600px; object-fit: cover;">
-        </div>
+        {% if post.content %}
+            <p class="post-content" style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 20px; color: var(--text-dark); white-space: pre-wrap;">{{ post.content }}</p>
         {% endif %}
         
-        <div style="display: flex; gap: 20px; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); padding: 12px 0; margin-bottom: 20px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
-            <span>👁 {{ post.views }} Views</span>
-            <span>👍 {{ post.likes.count }} Likes</span>
-            <span>💬 {{ post.comments.count }} Comments</span>
-        </div>
+        {% if post.image %}
+            <img src="{{ post.image.url }}" style="width: 100%; border-radius: 12px; margin-bottom: 20px; max-height: 600px; object-fit: cover;">
+        {% endif %}
+        {% if post.video %}
+            <video controls style="width: 100%; border-radius: 12px; margin-bottom: 20px; background: #000; max-height: 600px;">
+                <source src="{{ post.video.url }}" type="video/mp4">
+            </video>
+        {% endif %}
 
-        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-            <form method="POST" action="{% url 'network:like_post' post.id %}">
+        {% if post.repost_of %}
+            <div class="repost-card">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <div style="width: 24px; height: 24px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: #475569;">
+                        {{ post.repost_of.author.first_name|first }}
+                    </div>
+                    <strong style="font-size: 0.9rem; color: var(--text-dark);">{{ post.repost_of.author.first_name }} {{ post.repost_of.author.last_name }}</strong>
+                </div>
+                
+                {% if post.repost_of.content %}
+                    <p style="font-size: 0.95rem; margin-bottom: 15px; color: var(--text-dark);">{{ post.repost_of.content }}</p>
+                {% endif %}
+                
+                {% if post.repost_of.image %}
+                    <img src="{{ post.repost_of.image.url }}" style="width: 100%; border-radius: 8px; max-height: 400px; object-fit: cover;">
+                {% endif %}
+                {% if post.repost_of.video %}
+                    <video controls style="width: 100%; border-radius: 8px; background: #000; max-height: 400px;">
+                        <source src="{{ post.repost_of.video.url }}" type="video/mp4">
+                    </video>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+      
+
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+           
+            <!-- Like Button -->
+            <form class="ajax-like-form" data-post-id="{{ post.id }}" action="{% url 'network:like_post' post.id %}" style="margin: 0; flex-grow: 1; display: flex;">
                 {% csrf_token %}
-                <button type="submit" class="glass-btn" style="{% if not request.user in post.likes.all %}background: transparent !important; color: var(--text-muted) !important; border-color: var(--border-light) !important;{% endif %} padding: 8px 24px !important;">
-                    {% if request.user in post.likes.all %}👍 Liked{% else %}👍 Like{% endif %}
+                <button type="button" id="like-btn-{{ post.id }}" class="action-bar-btn like-action-btn {% if request.user in post.likes.all %}active-liked{% endif %}">
+                    {% if request.user in post.likes.all %}
+                        👍 Liked
+                    {% else %}
+                        👍 Like
+                    {% endif %}
                 </button>
             </form>
-        </div>
 
-        <div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: 12px; padding: 20px;">
+
+
+            <button type="button" class="action-bar-btn comment-btn" data-post-id="{{ post.id }}">💬 Comment</button>
             
+            <button type="button" class="action-bar-btn repost-btn" data-post-id="{{ post.id }}" data-author-name="{{ post.author.first_name }}">🔁 Repost</button>
+            
+            <button type="button" class="action-bar-btn send-btn">✈️ Share</button>
+        </div>
+          <div style="display: flex; gap: 15px; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); padding: 12px 0; margin-bottom: 20px; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
+            <span>{{ post.views }} Views</span><span>•</span>
+            <span id="like-count-{{ post.id }}">{{ post.likes.count }} Likes</span><span>•</span>
+            <span>{{ post.comments.count }} Comments</span>
+        </div>
+        <div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: 12px; padding: 20px;">
             {% for comment in post.comments.all %}
                 <div style="margin-bottom: 15px; border-bottom: 1px solid var(--border-light); padding-bottom: 15px;">
                     <strong style="color: var(--text-dark); font-size: 0.9rem;">{{ comment.author.first_name }} {{ comment.author.last_name }}</strong>
@@ -80,25 +182,123 @@
             {% empty %}
                 <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin-bottom: 15px;">No comments yet. Be the first!</p>
             {% endfor %}
-            
             <form method="POST" action="{% url 'network:add_comment' post.id %}" style="display: flex; gap: 10px; margin-top: 15px;">
                 {% csrf_token %}
-                <input type="text" name="content" class="glass-input" placeholder="Write a comment..." style="flex-grow: 1; border-radius: 50px !important;">
-                <button type="submit" class="glass-btn" style="padding: 10px 24px !important;">Post</button>
+                <input type="text" name="content" id="comment-box-{{ post.id }}" class="glass-input" placeholder="Write a comment..." style="flex-grow: 1; border-radius: 50px !important;">
+                <button type="submit" class="glass-btn" style="padding: 10px 24px !important; border-radius: 50px;">Post</button>
             </form>
         </div>
     </div>
     {% endfor %}
 </div>
 
+<div id="toast-container"></div>
 <script>
-    // This script finds #words and turns them into clickable links!
     document.addEventListener('DOMContentLoaded', () => {
-        const posts = document.querySelectorAll('.post-content');
-        posts.forEach(post => {
-            // Updated the link color to match your new Amber theme
+        const toast = document.getElementById("toast-container");
+        let toastTimeout; 
+        function triggerToast(message) {
+            if (!toast) return;
+            toast.innerText = message;
+            toast.classList.add("show");
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => { toast.classList.remove("show"); }, 3000);
+        }
+
+        document.querySelectorAll('.post-content').forEach(post => {
             post.innerHTML = post.innerHTML.replace(/#(\w+)/g, '<a href="/groups/tag/$1/" style="color: var(--primary); text-decoration: none; font-weight: 700;">#$1</a>');
         });
+
+        document.addEventListener('change', function(e) {
+            if (e.target.id === 'photo-input' && e.target.files[0]) {
+                const label = document.getElementById('photo-label');
+                document.getElementById('photo-text').innerText = '✅ ' + e.target.files[0].name.substring(0, 10) + '...';
+                label.style.background = 'rgba(16, 185, 129, 0.1)'; label.style.color = '#10b981'; label.style.borderColor = '#34d399';
+            }
+            if (e.target.id === 'video-input' && e.target.files[0]) {
+                const label = document.getElementById('video-label');
+                document.getElementById('video-text').innerText = '✅ ' + e.target.files[0].name.substring(0, 10) + '...';
+                label.style.background = 'rgba(16, 185, 129, 0.1)'; label.style.color = '#10b981'; label.style.borderColor = '#34d399';
+            }
+        });
+
+        document.addEventListener('click', async function(e) {
+            // DATABASE-BACKED REPOST LOGIC
+            const repostBtn = e.target.closest('.repost-btn');
+            if (repostBtn) {
+                const postId = repostBtn.getAttribute('data-post-id');
+                const authorName = repostBtn.getAttribute('data-author-name');
+                
+                // Set the hidden input to the ID of the post being shared
+                document.getElementById('repost-id-input').value = postId;
+                
+                // Show visual confirmation on the create post form
+                const preview = document.getElementById('repost-preview');
+                document.getElementById('repost-preview-text').innerText = `🔁 Reposting ${authorName}'s update with all attached media...`;
+                preview.style.display = 'block';
+                
+                // Scroll to top and focus
+                const createBox = document.querySelector('textarea[name="content"]');
+                createBox.focus();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                triggerToast('Original media attached! Add your thoughts and Post.');
+            }
+            
+            const sendBtn = e.target.closest('.send-btn');
+            if (sendBtn) {
+                if (navigator.share) {
+                    try { await navigator.share({ title: 'A1 Networks Post', url: window.location.href }); } 
+                    catch (err) { console.log('Share window closed'); }
+                } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    triggerToast('🔗 Link copied to clipboard!');
+                }
+            }
+
+            const commentBtn = e.target.closest('.comment-btn');
+            if (commentBtn) {
+                const postId = commentBtn.getAttribute('data-post-id');
+                const commentBox = document.getElementById('comment-box-' + postId);
+                if (commentBox) { commentBox.focus(); commentBox.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+            }
+            // 5. NEW: Flawless AJAX Likes (Triggered by Click, not Submit)
+            const likeBtnClick = e.target.closest('.like-action-btn');
+            if (likeBtnClick) {
+                e.preventDefault(); 
+                
+                const likeForm = likeBtnClick.closest('form');
+                const postId = likeForm.getAttribute('data-post-id');
+                const countSpan = document.getElementById(`like-count-${postId}`);
+                
+                try {
+                    const response = await fetch(likeForm.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': likeForm.querySelector('[name=csrfmiddlewaretoken]').value,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.liked) {
+                        likeBtnClick.classList.add('active-liked');
+                        likeBtnClick.innerHTML = '👍 Liked';
+                    } else {
+                        likeBtnClick.classList.remove('active-liked');
+                        likeBtnClick.innerHTML = '👍 Like';
+                    }
+                    
+                    countSpan.innerText = `${data.like_count} Likes`;
+                    
+                } catch (error) {
+                    console.error("AJAX Error:", error);
+                }
+            }
+        });
+    
+       
     });
 </script>
 {% endblock %}
