@@ -81,9 +81,6 @@ def feed(request):
             return redirect('network:feed')
     
     posts = Post.objects.all().order_by('-created_at')
-    for post in posts:
-        post.views += 1
-        post.save()
 
     context = {
         'posts': posts,
@@ -249,11 +246,7 @@ def directory(request):
             Q(profile__headline__icontains=query) 
         ).distinct()
     
-    # ... rest of your existing connection logic ...# <--- ADD THIS LINE
-    
-    # ... rest of your code ...# CRITICAL: Prevents a user showing up twice if their name AND headline match!
-    
-    # 3. Your existing connection logic ( untouched! )
+    # Connection status tracking for directory users
     my_connections = Connection.objects.filter(
         Q(sender=request.user) | Q(receiver=request.user)
     )
@@ -390,37 +383,105 @@ def invite_to_job(request, username):
 @login_required
 def topic_groups(request):
     query = request.GET.get('q', '')
+    category = request.GET.get('cat', '')
+    
+    groups = TopicGroup.objects.all()
+    
     if query:
-        groups = TopicGroup.objects.filter(name__icontains=query)
-    else:
-        groups = TopicGroup.objects.all()
-        
-    return render(request, 'network/groups.html', {'groups': groups, 'query': query})
+        groups = groups.filter(
+            Q(name__icontains=query) | Q(description__icontains=query)
+        )
+    if category:
+        groups = groups.filter(category=category)
+    
+    my_groups = TopicGroup.objects.filter(members=request.user)
+    
+    context = {
+        'groups': groups,
+        'my_groups': my_groups,
+        'query': query,
+        'active_category': category,
+        'categories': TopicGroup.CATEGORY_CHOICES,
+    }
+    return render(request, 'network/groups.html', context)
 
 @login_required
 def group_detail(request, group_id):
     group = get_object_or_404(TopicGroup, id=group_id)
+    is_member = request.user in group.members.all()
     
     if request.method == 'POST':
-        content = request.POST.get('content')
-        if content:
-            if f"#{group.name.lower()}" not in content.lower():
-                content += f" #{group.name}"
-                
-            Post.objects.create(author=request.user, content=content)
-            
-            if request.user not in group.members.all():
-                group.members.add(request.user)
-        return redirect('network:group_detail', group_id=group.id)
+        action = request.POST.get('action', '')
+        
+        # Handle join/leave
+        if action == 'join':
+            group.members.add(request.user)
+            return redirect('network:group_detail', group_id=group.id)
+        elif action == 'leave':
+            group.members.remove(request.user)
+            return redirect('network:group_detail', group_id=group.id)
+        
+        # Handle new message (only if member)
+        content = request.POST.get('content', '').strip()
+        if content and is_member:
+            from .models import GroupMessage
+            GroupMessage.objects.create(group=group, author=request.user, content=content)
+            return redirect('network:group_detail', group_id=group.id)
     
-    messages_list = Post.objects.filter(content__icontains=f"#{group.name}").order_by('-created_at')
-    return render(request, 'network/group_detail.html', {'group': group, 'messages': messages_list})
+    from .models import GroupMessage
+    group_messages = GroupMessage.objects.filter(group=group).select_related('author').order_by('created_at')
+    members_list = group.members.all()
+    
+    context = {
+        'group': group,
+        'messages': group_messages,
+        'is_member': is_member,
+        'members_list': members_list,
+        'member_count': members_list.count(),
+    }
+    return render(request, 'network/group_detail.html', context)
+
+@login_required
+def create_group(request):
+    from .forms import GroupForm
+    
+    if request.method == 'POST':
+        form = GroupForm(request.POST)
+        if form.is_valid():
+            group = form.save(commit=False)
+            group.created_by = request.user
+            group.save()
+            group.members.add(request.user)
+            return redirect('network:group_detail', group_id=group.id)
+    else:
+        form = GroupForm()
+    
+    return render(request, 'network/create_group.html', {'form': form})
+
+@login_required
+def join_group(request, group_id):
+    if request.method == 'POST':
+        group = get_object_or_404(TopicGroup, id=group_id)
+        group.members.add(request.user)
+    return redirect('network:group_detail', group_id=group_id)
+
+@login_required
+def leave_group(request, group_id):
+    if request.method == 'POST':
+        group = get_object_or_404(TopicGroup, id=group_id)
+        group.members.remove(request.user)
+    return redirect('network:group_detail', group_id=group_id)
 
 @login_required
 def group_by_tag(request, hashtag):
     group = TopicGroup.objects.filter(name__iexact=hashtag).first()
     if not group:
-        group = TopicGroup.objects.create(name=hashtag, description=f"Community driven discussion about #{hashtag}")
+        group = TopicGroup.objects.create(
+            name=hashtag,
+            description=f"Community driven discussion about #{hashtag}",
+            created_by=request.user
+        )
+        group.members.add(request.user)
     return redirect('network:group_detail', group_id=group.id)
 
 

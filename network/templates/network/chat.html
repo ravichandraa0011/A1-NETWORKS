@@ -1,58 +1,57 @@
 {% extends 'network/base.html' %}
 
-{% block title %}Chat with {{ other_user.first_name }} | NicheNetwork{% endblock %}
+{% block title %}Chat with {{ other_user.first_name }} | A1 Networks{% endblock %}
 
 {% block content %}
-<div class="main-container">    
-    <div style="padding: 1rem 1.5rem; background: #f8fafc; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 1rem;">
-        <a href="{% url 'network:inbox' %}" style="text-decoration: none; color: #6b7280; font-size: 1.5rem; margin-right: 0.5rem;">&larr;</a>
-        <img src="{% if other_user.profile_picture %}{{ other_user.profile_picture.url }}{% else %}/static/default_pic.png{% endif %}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
-        <div>
-            <h3 style="margin: 0; font-size: 1.2rem;">
-                <a href="{% url 'network:profile' other_user.username %}" style="color: #111827; text-decoration: none;">{{ other_user.first_name }} {{ other_user.last_name }}</a>
-            </h3>
-            <span style="font-size: 0.85rem; color: #059669;">{{ other_user.industry|default:"Connected" }}</span>
-        </div>
-    </div>
-
-    <div style="flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; background: #f1f5f9;" id="chat-box">
-        {% for message in messages %}
-            {% if message.sender == request.user %}
-                <div style="align-self: flex-end; max-width: 70%;">
-                    <div style="background: #2563eb; color: white; padding: 0.75rem 1.25rem; border-radius: 18px 18px 0 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); line-height: 1.5;">
-                        {{ message.content|linebreaksbr }}
-                    </div>
-                    <div style="font-size: 0.75rem; color: #7b648b; text-align: right; margin-top: 0.3rem;">{{ message.timestamp|time:"h:i A" }}</div>
+<div class="main-container" style="max-width: 900px; margin: var(--space-10) auto; padding: 0 var(--space-5);">
+    <div class="glass-card static" style="display: flex; flex-direction: column; height: 75vh; padding: 0; overflow: hidden; border-radius: var(--radius-xl);">
+        
+        <!-- Chat Header -->
+        <div style="padding: var(--space-5); border-bottom: 1px solid var(--border); background: var(--bg-elevated); display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);">
+            <div style="display: flex; align-items: center; gap: var(--space-3); overflow: hidden;">
+                <a href="{% url 'network:inbox' %}" class="glass-btn-ghost" style="padding: 6px 12px; font-size: var(--text-xs); border-radius: var(--radius-full); margin-right: var(--space-1);">&larr; Back</a>
+                
+                <div class="avatar avatar-md" style="background: var(--accent); color: white;">
+                    {{ other_user.first_name|first }}{{ other_user.last_name|first }}
                 </div>
-            {% else %}
-                <div style="align-self: flex-start; max-width: 70%;">
-                    <div style="background: white; color: #1e293b; padding: 0.75rem 1.25rem; border-radius: 18px 18px 18px 0; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); line-height: 1.5;">
-                        {{ message.content|linebreaksbr }}
-                    </div>
-                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.3rem;">{{ message.timestamp|time:"h:i A" }}</div>
+                
+                <div style="overflow: hidden;">
+                    <h3 style="font-size: var(--text-base); font-weight: 700; color: var(--text-primary); margin: 0;">
+                        <a href="{% url 'network:profile' other_user.username %}" style="text-decoration: none; color: inherit;">{{ other_user.first_name }} {{ other_user.last_name }}</a>
+                    </h3>
+                    <p style="color: var(--success); font-size: var(--text-xs); margin: 2px 0 0 0; font-weight: 600;">{{ other_user.industry|default:"Connected" }}</p>
                 </div>
-            {% endif %}
-        {% empty %}
-            <div style="text-align: center; color: #64748b; margin-top: auto; margin-bottom: auto;">
-                <p>No messages yet. Say hello to {{ other_user.first_name }}!</p>
             </div>
-        {% endfor %}
-    </div>
+        </div>
 
-    <div style="padding: 1rem 1.5rem; background: white; border-top: 1px solid #e5e7eb;">
-        <form method="POST" style="display: flex; gap: 0.75rem; align-items: center;">
-            {% csrf_token %}
-            <input type="text" name="content" placeholder="Write a message..." required autocomplete="off" style="flex: 1; padding: 0.85rem 1.25rem; border: 1px solid #cbd5e1; border-radius: 25px; outline: none; font-size: 1rem; transition: border-color 0.2s;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#cbd5e1'">
-            <button type="submit" style="padding: 0.85rem 1.5rem; background: #2563eb; color: white; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#1d4ed8'" onmouseout="this.style.backgroundColor='#2563eb'">
-                Send
-            </button>
-        </form>
+        <!-- Messages Area -->
+        <div id="chat-box" style="flex-grow: 1; overflow-y: auto; padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); background: var(--bg-primary);">
+            {% for message in messages %}
+            <div class="{% if message.sender == request.user %}message-sent{% else %}message-received{% endif %}" style="align-self: {% if message.sender == request.user %}flex-end{% else %}flex-start{% endif %};">
+                <p style="margin: 0; font-size: var(--text-sm); line-height: 1.5;">{{ message.content }}</p>
+                <span class="message-time">{{ message.timestamp|time:"h:i A" }}</span>
+            </div>
+            {% empty %}
+            <div style="text-align: center; color: var(--text-tertiary); margin-top: auto; margin-bottom: auto; padding: var(--space-10);">
+                <div style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">👋</div>
+                <p style="font-size: var(--text-base);">No messages yet. Say hello to {{ other_user.first_name }}!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Input Area -->
+        <div style="padding: var(--space-5); border-top: 1px solid var(--border); background: var(--bg-surface);">
+            <form method="POST" style="display: flex; gap: var(--space-3); align-items: center;">
+                {% csrf_token %}
+                <input type="text" name="content" placeholder="Write a message..." required autocomplete="off" style="flex: 1; border-radius: var(--radius-full); margin: 0;">
+                <button type="submit" class="glass-btn" style="border-radius: var(--radius-full); padding: 12px 24px;">Send</button>
+            </form>
+        </div>
     </div>
 </div>
 
 <script>
-    // This script automatically scrolls the chat to the newest message at the bottom
     const chatBox = document.getElementById('chat-box');
-    chatBox.scrollTop = chatBox.scrollHeight;
+    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
 </script>
 {% endblock %}

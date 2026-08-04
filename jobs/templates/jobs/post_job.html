@@ -1,40 +1,23 @@
 {% extends 'network/base.html' %}
-
-{% block title %}Hire Talent |A1 Networks {% endblock %}
+{% block title %}Post a Job | A1 Networks{% endblock %}
 
 {% block content %}
-<style>
-    form p {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 20px;
-    }
-    form p label {
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: var(--navy-dark);
-    }
-    form span.helptext {
-        color: var(--text-muted);
-        font-size: 0.85rem;
-        margin-top: 5px;
-    }
-</style>
+<div class="container-narrow" style="margin-top: var(--space-10); margin-bottom: var(--space-12);">
+    <div class="glass-card static" style="padding: var(--space-10);">
+        <div style="text-align: center; margin-bottom: var(--space-10);">
+            <h1 style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">Post a New Opportunity</h1>
+            <p style="color: var(--text-tertiary); font-size: var(--text-base);">Find the right professional for your task.</p>
+        </div>
 
-<div style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
-    <div class="glass-card" style="padding: 40px;">
-        <h2 style="margin-top: 0; margin-bottom: 10px;">Post a New Opportunity</h2>
-        <p style="color: var(--text-muted); margin-bottom: 30px;">Find the right professional for your task.</p>
-
-        <form method="POST">
+        <form method="POST" style="display: flex; flex-direction: column; gap: var(--space-6);">
             {% csrf_token %}
-            
+
             {{ form.as_p }}
 
-            <p>
+            <div class="form-group">
                 <label>Required Profession / Worker Type</label>
-                <input type="text" name="worker_type" list="profession-options" placeholder="Search profession..." class="glass-input" style="width: 100%;">
-                
+                <input type="text" name="worker_type" list="profession-options" placeholder="Search profession..." style="border-radius: var(--radius-md);">
+
                 <datalist id="profession-options">
                     <option value="Software Engineer">
                     <option value="Full Stack Developer">
@@ -49,7 +32,6 @@
                     <option value="IT Support Specialist">
                     <option value="Database Administrator">
                     <option value="Mobile App Developer">
-                    
                     <option value="Project Manager">
                     <option value="Product Manager">
                     <option value="Chartered Accountant (CA)">
@@ -60,7 +42,6 @@
                     <option value="Business Analyst">
                     <option value="Supply Chain Manager">
                     <option value="Legal Advisor / Lawyer">
-
                     <option value="UI/UX Designer">
                     <option value="Graphic Designer">
                     <option value="Video Editor">
@@ -70,7 +51,6 @@
                     <option value="2D/3D Animator">
                     <option value="Freelance Content Creator">
                     <option value="Event Planner">
-
                     <option value="Civil Engineer">
                     <option value="Electrical Engineer">
                     <option value="Electrician">
@@ -83,7 +63,6 @@
                     <option value="Mason / Bricklayer">
                     <option value="General Contractor">
                     <option value="Interior Designer">
-
                     <option value="Delivery Partner">
                     <option value="Cab / Auto Driver">
                     <option value="Housekeeping / Maid">
@@ -100,12 +79,11 @@
                     <option value="Babysitter / Nanny">
                     <option value="Pet Sitter / Dog Walker">
                 </datalist>
-            </p>
-            
+            </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-light);">
-                <a href="{% url 'jobs:job_list' %}" style="color: var(--text-muted); text-decoration: none; font-weight: 600;">Cancel</a>
-                <button type="submit" class="glass-btn">Publish Job Post</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--border);">
+                <a href="{% url 'jobs:job_list' %}" style="color: var(--text-tertiary); font-weight: 600; font-size: var(--text-sm);">Cancel</a>
+                <button type="submit" class="glass-btn" style="padding: 12px 32px;">Publish Job Post</button>
             </div>
         </form>
     </div>

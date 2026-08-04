@@ -1,71 +1,65 @@
 {% extends 'network/base.html' %}
-
-{% block title %}My Network |A1 Conections{% endblock %}
+{% block title %}My Network | A1 Networks{% endblock %}
 
 {% block content %}
-<div style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+<div style="max-width: 1000px; margin: var(--space-10) auto; padding: 0 var(--space-5);">
 
-    <div class="glass-card" style="margin-bottom: 40px; padding: 30px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 15px; margin-bottom: 20px;">
-            <h2 style="margin-bottom: 0; color: var(--navy-dark); font-size: 1.5rem;">Pending Invitations</h2>
-            <span style="background: var(--primary); color: #ffffff; padding: 4px 14px; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">{{ invite_count }}</span>
+    <!-- ═══ PENDING INVITATIONS ═══ -->
+    <div class="glass-card static" style="margin-bottom: var(--space-10); padding: var(--space-8);">
+        <div class="section-header" style="margin-bottom: var(--space-5);">
+            <h2 class="section-title" style="font-size: var(--text-2xl);">Pending Invitations</h2>
+            <span class="badge badge-accent">{{ invite_count }}</span>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 15px;">
+        <div style="display: flex; flex-direction: column; gap: var(--space-4);">
             {% for invite in pending_invites %}
-            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 15px 20px; border-radius: 12px; border: 1px solid var(--border-light);">
-                
-                <div style="display: flex; gap: 15px; align-items: center;">
-                    <div style="width: 55px; height: 55px; border-radius: 50%; background: rgba(5, 150, 105, 0.1); border: 1px solid rgba(5, 150, 105, 0.2); display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: bold; font-size: 1.2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-elevated); padding: var(--space-4) var(--space-5); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <div style="display: flex; gap: var(--space-4); align-items: center;">
+                    <div class="avatar avatar-lg avatar-accent">
                         {{ invite.sender.first_name|first|upper }}{{ invite.sender.last_name|first|upper }}
                     </div>
                     <div>
-                        <h4 style="color: var(--navy-dark); margin: 0 0 4px 0; font-size: 1.1rem;">{{ invite.sender.first_name }} {{ invite.sender.last_name }}</h4>
-                        <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">{{ invite.sender.headline|default:"Professional" }}</p>
+                        <h4 style="margin-bottom: 2px; font-size: var(--text-base);">{{ invite.sender.first_name }} {{ invite.sender.last_name }}</h4>
+                        <p style="color: var(--text-tertiary); font-size: var(--text-sm); margin: 0;">{{ invite.sender.headline|default:"Professional" }}</p>
                     </div>
                 </div>
-                
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: var(--space-3);">
                     <form method="POST" action="{% url 'network:ignore_request' invite.id %}">
                         {% csrf_token %}
-                        <button type="submit" class="glass-btn" style="background: transparent !important; border: 1px solid var(--text-muted) !important; color: var(--text-muted) !important;">Ignore</button>
+                        <button type="submit" class="glass-btn-ghost" style="padding: 8px 18px; font-size: var(--text-sm);">Ignore</button>
                     </form>
                     <form method="POST" action="{% url 'network:accept_request' invite.id %}">
                         {% csrf_token %}
-                        <button type="submit" class="glass-btn">Accept</button>
+                        <button type="submit" class="glass-btn" style="padding: 8px 18px; font-size: var(--text-sm);">Accept</button>
                     </form>
                 </div>
-
             </div>
             {% empty %}
-            <p style="color: var(--text-muted); text-align: center; padding: 20px 0;">You have no pending invitations.</p>
+            <p style="color: var(--text-tertiary); text-align: center; padding: var(--space-5) 0; font-size: var(--text-sm);">You have no pending invitations.</p>
             {% endfor %}
         </div>
     </div>
 
-    <div class="glass-card" style="padding: 30px;">
-        <h2 style="border-bottom: 1px solid var(--border-light); padding-bottom: 15px; margin-bottom: 25px; color: var(--navy-dark); font-size: 1.5rem; margin-top: 0;">My Connections</h2>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;">
+    <!-- ═══ MY CONNECTIONS ═══ -->
+    <div class="glass-card static" style="padding: var(--space-8);">
+        <div class="section-header" style="margin-bottom: var(--space-6);">
+            <h2 class="section-title" style="font-size: var(--text-2xl);">My Connections</h2>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-5);">
             {% for person in connected_users %}
-            <div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: 16px; padding: 25px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: transform 0.3s ease;">
-                
-                <div style="width: 70px; height: 70px; border-radius: 50%; background: rgba(5, 150, 105, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; margin: 0 auto 15px;">
+            <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-6); text-align: center; transition: all 0.3s ease;">
+                <div class="avatar avatar-lg avatar-accent" style="margin: 0 auto var(--space-4);">
                     {{ person.first_name|first|upper }}{{ person.last_name|first|upper }}
                 </div>
-                
-                <h3 style="color: var(--navy-dark); font-size: 1.1rem; margin: 0 0 5px 0;">{{ person.first_name }} {{ person.last_name }}</h3>
-                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; height: 40px; overflow: hidden;">{{ person.headline|default:"Professional" }}</p>
-                
-                <a href="{% url 'network:profile' username=person.username %}" style="text-decoration: none;">
-                    <button class="glass-btn" style="width: 100%; background: transparent !important; border: 2px solid var(--primary) !important; color: var(--primary) !important;">View Profile</button>
-                </a>
+                <h3 style="font-size: var(--text-base); margin-bottom: var(--space-1);">{{ person.first_name }} {{ person.last_name }}</h3>
+                <p style="color: var(--text-tertiary); font-size: var(--text-xs); margin-bottom: var(--space-5); height: 36px; overflow: hidden;">{{ person.headline|default:"Professional" }}</p>
+                <a href="{% url 'network:profile' username=person.username %}" class="glass-btn-outline" style="width: 100%; display: block; text-align: center; padding: 8px 16px; font-size: var(--text-sm);">View Profile</a>
             </div>
             {% empty %}
-            <p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1; padding: 30px 0;">You don't have any connections yet. Go to the Directory to meet people!</p>
+            <p style="color: var(--text-tertiary); text-align: center; grid-column: 1 / -1; padding: var(--space-8) 0;">You don't have any connections yet. Go to the Directory to meet people!</p>
             {% endfor %}
         </div>
     </div>
-
 </div>
 {% endblock %}

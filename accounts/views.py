@@ -7,10 +7,9 @@ from django.contrib import messages
 @login_required
 def edit_profile(request):
     if request.method == 'POST':
-        form = UserEditForm(request.POST, instance=request.user)
+        form = UserEditForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            # Send a success message to the template
             messages.success(request, 'Your profile has been successfully updated!')
             return redirect('network:profile', username=request.user.username)
     else:
@@ -32,15 +31,3 @@ def register(request):
         form = CustomUserCreationForm()
         
     return render(request, 'accounts/register.html', {'form': form})
-@login_required
-def edit_profile(request):
-    if request.method == 'POST':
-        # CRITICAL: Added request.FILES so images actually save!
-        form = UserEditForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect('network:profile', username=request.user.username)
-    else:
-        form = UserEditForm(instance=request.user)
-        
-    return render(request, 'accounts/edit_profile.html', {'form': form})

@@ -1,41 +1,114 @@
 {% extends 'network/base.html' %}
+{% block title %}Groups | A1 Networks{% endblock %}
 
 {% block content %}
-<div style="max-width: 1000px; margin: 0 auto;">
+<div class="main-container" style="max-width: 1100px; margin: var(--space-10) auto; padding: 0 var(--space-5);">
     
-    <div style="text-align: center; margin-bottom: 30px;">
-        <h1 class="glass-title">Discussion Groups</h1>
-        <p style="color: var(--text-dim); font-size: 1.1rem; margin-bottom: 20px;">Use a #hashtag in your feed to automatically start a new community.</p>
-        
-        <form method="GET" action="{% url 'network:groups' %}" style="display: flex; justify-content: center; gap: 10px; max-width: 500px; margin: 0 auto;">
-            <input type="text" name="q" value="{{ query }}" placeholder="Search for a #topic..." style="flex-grow: 1; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); padding: 12px 20px; border-radius: 30px; color: #fff; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; outline: none;">
-            <button type="submit" class="glass-btn" style="border-radius: 30px; padding: 0 25px;">Search</button>
-        </form>
+    <!-- ═══ HEADER ═══ -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-8);">
+        <div>
+            <h1 class="glass-title" style="font-size: var(--text-3xl); margin-bottom: var(--space-1);">Discussion Groups</h1>
+            <p style="color: var(--text-secondary); font-size: var(--text-sm); margin: 0;">Join communities, share ideas, and collaborate with like-minded professionals.</p>
+        </div>
+        <a href="{% url 'network:create_group' %}" class="glass-btn" style="padding: 12px 28px; font-size: var(--text-sm); border-radius: var(--radius-full); text-decoration: none; white-space: nowrap;">
+            ✦ Create Group
+        </a>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
-        
+    <!-- ═══ SEARCH + CATEGORY FILTERS ═══ -->
+    <div class="glass-card static" style="padding: var(--space-5); margin-bottom: var(--space-8);">
+        <form method="GET" action="{% url 'network:groups' %}" style="display: flex; gap: var(--space-3); margin-bottom: var(--space-4); flex-wrap: wrap;">
+            <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Search groups by name or topic..." style="flex: 1; min-width: 200px; border-radius: var(--radius-full);">
+            {% if active_category %}<input type="hidden" name="cat" value="{{ active_category }}">{% endif %}
+            <button type="submit" class="glass-btn" style="border-radius: var(--radius-full); padding: 10px 24px;">Search</button>
+        </form>
+
+        <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+            <a href="{% url 'network:groups' %}{% if query %}?q={{ query }}{% endif %}" 
+               class="badge {% if not active_category %}badge-accent{% else %}badge-surface{% endif %}" 
+               style="text-decoration: none; cursor: pointer; padding: 6px 16px; font-size: var(--text-xs); border-radius: var(--radius-full); transition: all 0.2s ease;">
+                All
+            </a>
+            {% for value, label in categories %}
+            <a href="{% url 'network:groups' %}?cat={{ value }}{% if query %}&q={{ query }}{% endif %}" 
+               class="badge {% if active_category == value %}badge-accent{% else %}badge-surface{% endif %}" 
+               style="text-decoration: none; cursor: pointer; padding: 6px 16px; font-size: var(--text-xs); border-radius: var(--radius-full); transition: all 0.2s ease;">
+                {{ label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ═══ MY GROUPS ═══ -->
+    {% if my_groups %}
+    <div style="margin-bottom: var(--space-10);">
+        <h2 style="font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--space-5); color: var(--text-primary);">
+            <span style="color: var(--accent);">⚡</span> My Groups
+        </h2>
+        <div style="display: flex; gap: var(--space-4); overflow-x: auto; padding-bottom: var(--space-3); -webkit-overflow-scrolling: touch;">
+            {% for group in my_groups %}
+            <a href="{% url 'network:group_detail' group.id %}" style="text-decoration: none; min-width: 240px; flex-shrink: 0;">
+                <div class="glass-card" style="padding: var(--space-5); min-height: 120px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+                            <span style="background: var(--accent-light); color: var(--accent); padding: 2px 10px; border-radius: var(--radius-full); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">{{ group.get_category_display }}</span>
+                        </div>
+                        <h3 style="color: var(--text-primary); font-size: var(--text-base); font-weight: 700; margin: 0;">#{{ group.name }}</h3>
+                    </div>
+                    <span style="color: var(--text-tertiary); font-size: var(--text-xs); font-weight: 600; margin-top: var(--space-3);">👥 {{ group.members.count }} member{{ group.members.count|pluralize }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ═══ ALL GROUPS GRID ═══ -->
+    <h2 style="font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--space-5); color: var(--text-primary);">
+        {% if active_category %}
+            {% for value, label in categories %}{% if value == active_category %}{{ label }}{% endif %}{% endfor %} Groups
+        {% elif query %}
+            Results for "{{ query }}"
+        {% else %}
+            Explore All Groups
+        {% endif %}
+    </h2>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-6);">
         {% for group in groups %}
-        <div class="glass-card" style="padding: 25px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 220px;">
             <div>
-                <h2 style="font-family: 'Cinzel', serif; color: var(--gold); margin-top: 0; font-size: 1.4rem;">#{{ group.name }}</h2>
-                <p style="color: var(--text-warm); font-size: 0.95rem; line-height: 1.5;">{{ group.description }}</p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3);">
+                    <span style="background: var(--accent-light); color: var(--accent); padding: 3px 12px; border-radius: var(--radius-full); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">{{ group.get_category_display }}</span>
+                    {% if group.created_by %}
+                    <span style="color: var(--text-tertiary); font-size: var(--text-xs);">by {{ group.created_by.first_name }}</span>
+                    {% endif %}
+                </div>
+                <h2 style="color: var(--accent); margin-top: 0; font-size: var(--text-xl); font-weight: 700; margin-bottom: var(--space-2);">#{{ group.name }}</h2>
+                <p style="color: var(--text-secondary); font-size: var(--text-sm); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">{{ group.description }}</p>
             </div>
             
-            <div style="margin-top: 20px; border-top: 1px solid var(--glass-border); padding-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: var(--text-dim); font-size: 0.85rem;">👥 {{ group.members.count }} Members</span>
+            <div style="margin-top: var(--space-5); border-top: 1px solid var(--border); padding-top: var(--space-4); display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: var(--space-3);">
+                    <span style="color: var(--text-tertiary); font-size: var(--text-xs); font-weight: 600;">👥 {{ group.members.count }} member{{ group.members.count|pluralize }}</span>
+                    <span style="color: var(--text-tertiary); font-size: var(--text-xs);">💬 {{ group.messages.count }}</span>
+                </div>
                 <a href="{% url 'network:group_detail' group.id %}" style="text-decoration: none;">
-                    <button class="glass-btn" style="padding: 8px 15px; font-size: 0.9rem;">Join Discussion &rarr;</button>
+                    <button class="glass-btn-ghost" style="padding: 6px 16px; font-size: var(--text-xs);">
+                        {% if request.user in group.members.all %}Open{% else %}Join{% endif %} &rarr;
+                    </button>
                 </a>
             </div>
         </div>
-        
         {% empty %}
-        <div class="glass-card" style="grid-column: 1 / -1; text-align: center; color: var(--text-dim); padding: 40px;">
-            <p style="font-size: 1.1rem;">No topics found.</p>
+        <div class="glass-card static" style="grid-column: 1 / -1; text-align: center; color: var(--text-tertiary); padding: var(--space-12);">
+            <div style="font-size: var(--text-3xl); margin-bottom: var(--space-3);">💬</div>
+            <p style="font-size: var(--text-base); margin-bottom: var(--space-2);">No groups found.</p>
+            <p style="font-size: var(--text-sm); color: var(--text-tertiary);">
+                <a href="{% url 'network:create_group' %}" style="color: var(--accent); text-decoration: none; font-weight: 600;">Create the first one</a> or use a #hashtag in your feed!
+            </p>
         </div>
         {% endfor %}
-        
     </div>
 </div>
 {% endblock %}

@@ -1,46 +1,91 @@
 {% extends 'network/base.html' %}
-
-{% block title %}Edit Job |A1 Networks {% endblock %}
+{% block title %}Edit Job | A1 Networks{% endblock %}
 
 {% block content %}
-<style>
-    form p { display: flex; flex-direction: column; margin-bottom: 20px; }
-    form p label { color: var(--gold) !important; font-family: 'Cinzel', serif !important; font-size: 0.85rem !important; margin-bottom: 8px !important; letter-spacing: 0.05em !important; }
-    form input[type="text"], form input[type="email"], form input[type="number"], form input[type="password"], form textarea, form select {
-        width: 100% !important; background: rgba(0, 0, 0, 0.5) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        padding: 12px 15px !important; border-radius: 6px !important; color: #ffffff !important; font-family: 'Cormorant Garamond', serif !important;
-        font-size: 1.1rem !important; outline: none !important; transition: 0.3s !important;
-    }
-    form input:focus, form textarea:focus, form select:focus { border-color: var(--gold) !important; background: rgba(0, 0, 0, 0.8) !important; }
-    form span.helptext { color: var(--text-dim) !important; font-size: 0.8rem !important; margin-top: 5px !important; font-style: italic !important; }
-</style>
-
-<div class="glass-card" style="max-width: 800px; margin: 40px auto; padding: 40px;">
-    <h2 style="font-family: 'Cinzel', serif; color: var(--gold); margin-bottom: 10px;">Edit Opportunity</h2>
-    <p style="color: var(--text-dim); margin-bottom: 30px;">Update the details for {{ job.title }}.</p>
-    
-
-    <form method="POST">
-        {% csrf_token %}
-        
-        {{ form.as_p }}
-
-        <p>
-            <label style="color: var(--gold); display: block; margin-bottom: 8px; font-family: 'Cinzel', serif; font-size: 0.85rem;">Required Profession / Worker Type</label>
-            <input type="text" name="worker_type" list="profession-options" value="{{ job.worker_type|default:'' }}" placeholder="Search profession..." style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); padding: 12px 15px; border-radius: 6px; color: white;">
-            
-            <datalist id="profession-options">
-                <option value="Software Engineer"><option value="Full Stack Developer">
-                <option value="Python/Django Developer"><option value="Data Scientist">
-                <option value="Cloud Architect (AWS/Azure)"><option value="Cybersecurity Analyst / Ethical Hacker">
-                <option value="Electrician"><option value="Plumber"><option value="Carpenter">
-                </datalist>
-        </p>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--glass-border);">
-            <a href="{% url 'jobs:job_detail' job.id %}" style="color: var(--text-dim); text-decoration: none; font-weight: bold;">Cancel</a>
-            <button type="submit" class="glass-btn" style="padding: 12px 40px;">Save Updates</button>
+<div class="container-narrow" style="margin-top: var(--space-10); margin-bottom: var(--space-12);">
+    <div class="glass-card static" style="padding: var(--space-10);">
+        <div style="text-align: center; margin-bottom: var(--space-10);">
+            <h1 style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">Edit Opportunity</h1>
+            <p style="color: var(--text-tertiary); font-size: var(--text-base);">Update the details for {{ job.title }}.</p>
         </div>
-    </form>
+
+        <form method="POST" style="display: flex; flex-direction: column; gap: var(--space-6);">
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <div class="form-group">
+                <label>Required Profession / Worker Type</label>
+                <input type="text" name="worker_type" list="profession-options" value="{{ job.worker_type|default:'' }}" placeholder="Search profession..." style="border-radius: var(--radius-md);">
+
+                <datalist id="profession-options">
+                    <option value="Software Engineer">
+                    <option value="Full Stack Developer">
+                    <option value="Frontend Developer">
+                    <option value="Backend Developer">
+                    <option value="Python/Django Developer">
+                    <option value="Data Scientist">
+                    <option value="AI / Machine Learning Engineer">
+                    <option value="Cloud Architect (AWS/Azure)">
+                    <option value="DevOps Specialist">
+                    <option value="Cybersecurity Analyst / Ethical Hacker">
+                    <option value="IT Support Specialist">
+                    <option value="Database Administrator">
+                    <option value="Mobile App Developer">
+                    <option value="Project Manager">
+                    <option value="Product Manager">
+                    <option value="Chartered Accountant (CA)">
+                    <option value="Financial Analyst">
+                    <option value="Human Resources (HR) Manager">
+                    <option value="Sales Executive">
+                    <option value="Marketing Manager">
+                    <option value="Business Analyst">
+                    <option value="Supply Chain Manager">
+                    <option value="Legal Advisor / Lawyer">
+                    <option value="UI/UX Designer">
+                    <option value="Graphic Designer">
+                    <option value="Video Editor">
+                    <option value="Content Writer / Copywriter">
+                    <option value="Social Media Manager">
+                    <option value="Photographer / Videographer">
+                    <option value="2D/3D Animator">
+                    <option value="Freelance Content Creator">
+                    <option value="Event Planner">
+                    <option value="Civil Engineer">
+                    <option value="Electrical Engineer">
+                    <option value="Electrician">
+                    <option value="Plumber">
+                    <option value="Carpenter">
+                    <option value="Welder">
+                    <option value="Painter">
+                    <option value="Auto Mechanic">
+                    <option value="HVAC / AC Technician">
+                    <option value="Mason / Bricklayer">
+                    <option value="General Contractor">
+                    <option value="Interior Designer">
+                    <option value="Delivery Partner">
+                    <option value="Cab / Auto Driver">
+                    <option value="Housekeeping / Maid">
+                    <option value="Chef / Cook">
+                    <option value="Barista / Bartender">
+                    <option value="Security Guard">
+                    <option value="Personal Fitness Trainer">
+                    <option value="Teacher / Private Tutor">
+                    <option value="Virtual Assistant">
+                    <option value="Data Entry Operator">
+                    <option value="Handyman / All-Rounder">
+                    <option value="Landscaper / Gardener">
+                    <option value="Make-up Artist">
+                    <option value="Babysitter / Nanny">
+                    <option value="Pet Sitter / Dog Walker">
+                </datalist>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--border);">
+                <a href="{% url 'jobs:job_detail' job.id %}" style="color: var(--text-tertiary); font-weight: 600; font-size: var(--text-sm);">Cancel</a>
+                <button type="submit" class="glass-btn" style="padding: 12px 32px;">Save Updates</button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

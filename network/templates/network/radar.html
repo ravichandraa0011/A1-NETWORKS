@@ -2,76 +2,84 @@
 {% block title %}Local Radar | A1 Networks{% endblock %}
 
 {% block content %}
-<div style="text-align: center; margin: 40px 0;">
-    <span style="font-size: 3rem; display: block; margin-bottom: 10px;">📡</span>
-    <h1 style="color: var(--text-dark); font-size: 2.5rem; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -1px;">Local Radar</h1>
-    <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
-        Real-time availability. Connect with professionals who are ready to work <span style="color: #059669; font-weight: bold;">today</span>.
+<!-- ═══ HERO ═══ -->
+<div style="text-align: center; margin: var(--space-10) 0;">
+    <div style="width: 80px; height: 80px; background: var(--success-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-5); font-size: 2rem; position: relative;">
+        📡
+        <span style="position:absolute; inset:0; border-radius:50%; border:2px solid var(--success); animation: radarPulse 2s ease-out infinite; pointer-events:none;"></span>
+    </div>
+    <h1 style="font-size: var(--text-4xl); font-weight: 900; margin-bottom: var(--space-2);">Local Radar</h1>
+    <p style="color: var(--text-secondary); font-size: var(--text-lg); max-width: 600px; margin: 0 auto;">
+        Real-time availability. Connect with professionals who are ready to work <span style="color: var(--success); font-weight: bold;">today</span>.
     </p>
 </div>
 
-<div style="max-width: 1100px; margin: 0 auto; padding: 0 20px;">
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; padding-bottom: 50px;">
+<style>
+    @keyframes radarPulse {
+        0% { transform: scale(1); opacity: 0.6; }
+        100% { transform: scale(2.5); opacity: 0; }
+    }
+</style>
+
+<div style="max-width: var(--container-wide); margin: 0 auto; padding: 0 var(--space-5);">
+    <div class="grid-cards stagger" style="padding-bottom: var(--space-12);">
         {% for profile in available_workers %}
-            <div class="glass-card" style="padding: 30px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; border-top: 4px solid #10b981; transition: transform 0.2s ease;">
-                
-                <div style="position: relative; margin-bottom: 15px;">
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(245, 158, 11, 0.1); border: 2px solid var(--primary); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800;">
+            <div class="glass-card" style="padding: var(--space-8) var(--space-5); display: flex; flex-direction: column; align-items: center; text-align: center; border-top: 3px solid var(--success);">
+
+                <div style="position: relative; margin-bottom: var(--space-4);">
+                    <div class="avatar avatar-xl avatar-accent">
                         {{ profile.user.first_name|first }}{{ profile.user.last_name|first }}
                     </div>
-                    <div style="position: absolute; bottom: 0; right: 0; width: 18px; height: 18px; background: #10b981; border: 3px solid #ffffff; border-radius: 50%; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);"></div>
+                    <div style="position: absolute; bottom: 2px; right: 2px; width: 16px; height: 16px; background: var(--success); border: 3px solid var(--bg-surface); border-radius: 50%; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);"></div>
                 </div>
-                
-                <h3 style="margin: 0 0 5px 0; color: var(--text-dark); font-size: 1.25rem; font-weight: 700;">{{ profile.user.first_name }} {{ profile.user.last_name }}</h3>
-                <p style="margin: 0 0 20px 0; color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">{{ profile.headline|default:"Professional" }}</p>
-                
-                <div style="margin-top: auto; width: 100%; display: flex; gap: 10px; justify-content: center;">
-                    <a href="{% url 'network:profile' profile.user.username %}" class="glass-btn" style="background: transparent !important; color: var(--text-dark) !important; border: 1px solid var(--border-light) !important; padding: 8px 18px !important; font-size: 0.85rem !important;">Profile</a>
-                    
+
+                <h3 style="margin-bottom: var(--space-1); font-size: var(--text-lg);">{{ profile.user.first_name }} {{ profile.user.last_name }}</h3>
+                <p style="color: var(--text-tertiary); font-size: var(--text-sm); margin-bottom: var(--space-5);">{{ profile.headline|default:"Professional" }}</p>
+
+                <div style="margin-top: auto; width: 100%; display: flex; gap: var(--space-3); justify-content: center;">
+                    <a href="{% url 'network:profile' profile.user.username %}" class="glass-btn-ghost" style="padding: 8px 18px; font-size: var(--text-xs);">Profile</a>
+
                     {% if profile.user in connected_users %}
-                        <a href="{% url 'network:inbox_chat' profile.user.username %}" class="glass-btn" style="background: rgba(16,185,129,0.1) !important; color: #059669 !important; border: 1px solid #059669 !important; padding: 8px 18px !important; font-size: 0.85rem !important; text-decoration: none;">Message</a>
+                        <a href="{% url 'network:inbox_chat' profile.user.username %}" class="glass-btn-ghost" style="padding: 8px 18px; font-size: var(--text-xs); color: var(--success); border-color: var(--success); background: var(--success-light);">Message</a>
                     {% elif profile.user in pending_users %}
-                        <button disabled class="glass-btn" style="background: rgba(245,158,11,0.1) !important; color: var(--primary) !important; border: 1px solid var(--primary) !important; padding: 8px 18px !important; font-size: 0.85rem !important; cursor: default;">Pending</button>
+                        <button disabled class="glass-btn-ghost" style="padding: 8px 18px; font-size: var(--text-xs); cursor: default; opacity: 0.6;">Pending</button>
                     {% else %}
-                        <button onclick="openHireModal('{{ profile.user.username }}', '{{ profile.user.first_name }}', this)" 
-                                class="glass-btn" 
-                                style="background: #10b981 !important; color: white !important; border: none !important; padding: 8px 18px !important; font-size: 0.85rem !important;">
+                        <button onclick="openHireModal('{{ profile.user.username }}', '{{ profile.user.first_name }}', this)"
+                                class="glass-btn-success" style="padding: 8px 18px; font-size: var(--text-xs);">
                             Hire Now
                         </button>
                     {% endif %}
                 </div>
             </div>
         {% empty %}
-            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;" class="glass-card">
-                <span style="font-size: 3rem; opacity: 0.5; display: block; margin-bottom: 15px;">🏜️</span>
-                <h3 style="color: var(--text-dark); font-weight: 700;">Radar is clear.</h3>
-                <p style="color: var(--text-muted); font-weight: 500;">No professionals are actively seeking immediate work right now.</p>
+            <div class="glass-card empty-state" style="grid-column: 1 / -1;">
+                <span class="empty-state-icon">🏜️</span>
+                <h3>Radar is clear.</h3>
+                <p>No professionals are actively seeking immediate work right now.</p>
             </div>
         {% endfor %}
     </div>
 </div>
 
-<div id="hireModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center;">
-    <div class="glass-card" style="width: 100%; max-width: 450px; padding: 35px; position: relative; border: 1px solid rgba(255,255,255,0.9) !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;">
-        
-        <button onclick="closeHireModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.5rem; color: #64748b; cursor: pointer;">&times;</button>
-        
-        <h3 style="color: var(--text-dark); margin-top: 0; font-size: 1.5rem;">Hire <span id="modalWorkerName" style="color: var(--primary);"></span></h3>
-        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px;">Select the open role you want to invite them to apply for.</p>
+<!-- ═══ HIRE MODAL ═══ -->
+<div id="hireModal" class="modal-overlay">
+    <div class="modal-card" style="position: relative;">
+        <button onclick="closeHireModal()" class="modal-close">✕</button>
+        <h3 style="margin-bottom: var(--space-2); font-size: var(--text-xl);">Hire <span id="modalWorkerName" style="color: var(--accent);"></span></h3>
+        <p style="color: var(--text-tertiary); font-size: var(--text-sm); margin-bottom: var(--space-6);">Select the open role you want to invite them to apply for.</p>
 
         {% if my_jobs %}
-            <select id="jobSelect" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; outline: none; margin-bottom: 25px; font-family: 'Plus Jakarta Sans', sans-serif;">
+            <select id="jobSelect" style="width: 100%; margin-bottom: var(--space-6);">
                 {% for job in my_jobs %}
                     <option value="{{ job.id }}">{{ job.title }}</option>
                 {% endfor %}
             </select>
-            <button id="confirmHireBtn" class="glass-btn" style="width: 100%; font-size: 1rem !important;">Send Invitation & Message</button>
+            <button id="confirmHireBtn" class="glass-btn" style="width: 100%;">Send Invitation & Message</button>
         {% else %}
-            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: center;">
-                <p style="color: #ef4444; margin: 0; font-weight: bold;">You don't have any active job postings!</p>
+            <div style="background: var(--danger-light); border: 1px solid var(--danger); padding: var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-6); text-align: center;">
+                <p style="color: var(--danger); margin: 0; font-weight: bold; font-size: var(--text-sm);">You don't have any active job postings!</p>
             </div>
-            <a href="{% url 'jobs:post_job' %}" class="glass-btn" style="width: 100%; text-align: center; display: block; text-decoration: none;">Post a Job First</a>
+            <a href="{% url 'jobs:post_job' %}" class="glass-btn" style="width: 100%; text-align: center; display: block;">Post a Job First</a>
         {% endif %}
     </div>
 </div>
@@ -85,52 +93,38 @@
         currentWorkerUsername = username;
         currentWorkerButton = btnElement;
         document.getElementById('modalWorkerName').innerText = firstName;
-        document.getElementById('hireModal').style.display = 'flex';
+        document.getElementById('hireModal').classList.add('active');
     }
 
     function closeHireModal() {
-        document.getElementById('hireModal').style.display = 'none';
+        document.getElementById('hireModal').classList.remove('active');
     }
 
     const confirmBtn = document.getElementById('confirmHireBtn');
     if(confirmBtn) {
         confirmBtn.addEventListener('click', async function() {
             const jobId = document.getElementById('jobSelect').value;
-            const targetUrl = `/invite/${currentWorkerUsername}/`; 
-
+            const targetUrl = `/invite/${currentWorkerUsername}/`;
             const originalText = this.innerHTML;
-            this.innerHTML = "Sending Invite...";
-            this.disabled = true;
-
+            this.innerHTML = "Sending Invite..."; this.disabled = true;
             try {
                 const response = await fetch(targetUrl, {
                     method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ job_id: jobId })
                 });
-
                 const data = await response.json();
-
                 if (data.status === 'success') {
                     closeHireModal();
-                    // Instantly change the user's card button to green success!
                     currentWorkerButton.innerHTML = 'Invited ✅';
-                    currentWorkerButton.style.setProperty('background', 'rgba(16,185,129,0.1)', 'important');
-                    currentWorkerButton.style.setProperty('color', '#10b981', 'important');
-                    currentWorkerButton.style.setProperty('border', '1px solid #10b981', 'important');
-                    currentWorkerButton.onclick = null; // Remove the popup trigger
-                } else {
-                    alert(data.message);
-                }
-            } catch(e) {
-               console.error("Network error:", e);
-            } finally {
-                this.innerHTML = originalText;
-                this.disabled = false;
-            }
+                    currentWorkerButton.className = 'glass-btn-ghost';
+                    currentWorkerButton.style.color = 'var(--success)';
+                    currentWorkerButton.style.borderColor = 'var(--success)';
+                    currentWorkerButton.style.background = 'var(--success-light)';
+                    currentWorkerButton.onclick = null;
+                } else { alert(data.message); }
+            } catch(e) { console.error("Network error:", e); }
+            finally { this.innerHTML = originalText; this.disabled = false; }
         });
     }
 </script>

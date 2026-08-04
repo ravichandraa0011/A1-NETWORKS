@@ -2,21 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ profile_user.first_name }}'s Professional Portfolio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ profile_user.first_name }}'s Professional Portfolio | A1 Networks</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
         /* Base Styling */
         :root {
-            --primary: #2563eb;
-            --sidebar-bg: #1e293b;
-            --sidebar-text: #f8fafc;
-            --text-main: #334155;
-            --text-light: #64748b;
+            --primary: #f59e0b;
+            --primary-hover: #d97706;
+            --sidebar-bg: #1c1917;
+            --sidebar-text: #fafaf9;
+            --sidebar-border: #292524;
+            --text-main: #1c1917;
+            --text-light: #57534e;
+            --border: #e7e5e4;
         }
+
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            background: #fafaf9;
             margin: 0;
-            padding: 2rem;
+            padding: 3rem 1.5rem;
             color: var(--text-main);
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -28,9 +35,10 @@
             min-height: 297mm;
             margin: 0 auto;
             background: white;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05);
             display: grid;
             grid-template-columns: 32% 68%;
+            border-radius: 16px;
             overflow: hidden;
         }
 
@@ -38,103 +46,229 @@
         .sidebar {
             background-color: var(--sidebar-bg);
             color: var(--sidebar-text);
-            padding: 2.5rem 2rem;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
         }
+
         .sidebar h2 {
-            font-size: 1.2rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: var(--text-base);
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 2px solid #475569;
+            letter-spacing: 0.08em;
+            border-bottom: 2px solid var(--sidebar-border);
             padding-bottom: 0.5rem;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
+            margin: 0;
+            color: var(--primary);
         }
-        .sidebar p { margin: 0.5rem 0; font-size: 0.95rem; line-height: 1.5; }
+
+        .sidebar p {
+            margin: 0;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: #fafaf9;
+            opacity: 0.9;
+        }
 
         /* Right Column: Main Content */
         .main-content {
-            padding: 3rem;
+            padding: 4rem 3.5rem;
             background-color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
         }
+
         .header h1 {
+            font-family: 'Outfit', sans-serif;
             margin: 0 0 0.5rem 0;
             font-size: 2.8rem;
-            color: #0f172a;
+            color: #0c0a09;
             line-height: 1.1;
+            font-weight: 800;
+            letter-spacing: -0.03em;
         }
+
         .header h3 {
-            margin: 0 0 1.5rem 0;
-            font-size: 1.4rem;
+            margin: 0 0 1.25rem 0;
+            font-size: 1.25rem;
             color: var(--primary);
-            font-weight: 500;
+            font-weight: 600;
         }
+
         .verified-badge {
-            display: inline-block;
-            background: #d1fae5;
-            color: #065f46;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-bottom: 2rem;
+            display: inline-flex;
+            align-items: center;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
         .section-title {
-            font-size: 1.4rem;
-            color: #0f172a;
-            border-bottom: 2px solid #e2e8f0;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0c0a09;
+            border-bottom: 1px solid var(--border);
             padding-bottom: 0.5rem;
-            margin-top: 2rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .summary-text {
+            margin: 0;
+            font-size: 0.9375rem;
+            line-height: 1.7;
+            color: var(--text-light);
         }
 
         /* Projects & Reviews */
-        .project-item { margin-bottom: 2rem; }
-        .project-item h4 { margin: 0 0 0.25rem 0; font-size: 1.2rem; color: #0f172a; }
-        .project-item p { margin: 0 0 0.75rem 0; line-height: 1.6; }
+        .project-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .project-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 1rem;
+        }
+
+        .project-item h4 {
+            margin: 0;
+            font-size: 1.15rem;
+            color: #0c0a09;
+            font-weight: 700;
+        }
+
+        .project-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: color 0.15s ease;
+        }
+
+        .project-link:hover {
+            color: var(--primary-hover);
+        }
+
+        .project-desc {
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-light);
+        }
         
         .review-box {
-            background: #f8fafc;
-            border-left: 4px solid var(--primary);
-            padding: 1rem 1.25rem;
-            margin-top: 1rem;
-            border-radius: 0 4px 4px 0;
+            background: #fafaf9;
+            border-left: 3px solid var(--primary);
+            padding: 0.85rem 1.15rem;
+            border-radius: 0 8px 8px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
         }
-        .review-text { font-style: italic; color: #475569; margin: 0 0 0.5rem 0; font-size: 0.95rem; }
-        .review-author { color: var(--primary); font-size: 0.85rem; font-weight: bold; margin: 0; }
+
+        .review-text {
+            font-style: italic;
+            color: var(--text-main);
+            margin: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .review-author {
+            color: var(--text-light);
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* Controls button style */
+        .download-btn {
+            padding: 12px 32px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 9999px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.875rem;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .download-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .download-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
 
         /* Hide buttons when printing */
         @media print {
             body { padding: 0; background: white; }
-            .a4-page { box-shadow: none; width: 100%; }
+            .a4-page { box-shadow: none; width: 100%; border-radius: 0; }
             .no-print { display: none !important; }
         }
     </style>
 </head>
 <body>
 
-    <div style="text-align: center; margin-bottom: 2rem;" class="no-print">
-        <button onclick="window.print()" style="padding: 1rem 2.5rem; background-color: #0f172a; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s;">
+    <div style="text-align: center; margin-bottom: 2.5rem;" class="no-print">
+        <button onclick="window.print()" class="download-btn">
             📥 Download Professional PDF
         </button>
-        <p style="color: var(--text-light); margin-top: 0.5rem; font-size: 0.9rem;">(Ensure "Background graphics" is checked in the print menu for optimal styling)</p>
+        <p style="color: var(--text-light); margin-top: 0.75rem; font-size: 0.8rem; font-weight: 500;">(Ensure "Background graphics" is enabled in your browser's print options for optimal styling)</p>
     </div>
 
     <div class="a4-page">
         
         <div class="sidebar">
-            <h2>Contact</h2>
-            <p>📧 {{ profile_user.email }}</p>
-            <p>🏢 {{ profile_user.industry }}</p>
+            <div>
+                <h2>Contact</h2>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem;">
+                    <p>📧 {{ profile_user.email }}</p>
+                    {% if profile_user.mobile_number %}
+                        <p>📞 {{ profile_user.mobile_number }}</p>
+                    {% endif %}
+                    <p>📍 {{ profile_user.location|default:"Not specified" }}</p>
+                </div>
+            </div>
             
-            <h2>Education</h2>
-            <p>{{ profile_user.education|linebreaksbr|default:"Education details not provided." }}</p>
+            <div>
+                <h2>Education</h2>
+                <p style="margin-top: 0.75rem;">{{ profile_user.education|linebreaksbr|default:"Education details not provided." }}</p>
+            </div>
 
-            <h2>Core Competencies</h2>
-            <p>{{ profile_user.core_skills|linebreaksbr|default:"Skills not provided." }}</p>
+            <div>
+                <h2>Core Skills</h2>
+                <p style="margin-top: 0.75rem;">{{ profile_user.core_skills|linebreaksbr|default:"Skills not provided." }}</p>
+            </div>
 
-            <h2>Interests</h2>
-            <p>{{ profile_user.interests|linebreaksbr|default:"Interests not provided." }}</p>
+            <div>
+                <h2>Interests</h2>
+                <p style="margin-top: 0.75rem;">{{ profile_user.interests|linebreaksbr|default:"Interests not provided." }}</p>
+            </div>
         </div>
 
         <div class="main-content">
@@ -143,38 +277,43 @@
                 <h3>{{ profile_user.headline|default:"Professional" }}</h3>
                 
                 {% if profile_user.is_industry_verified %}
-                    <div class="verified-badge">✓ Work Connect Authenticated Portfolio</div>
+                    <div class="verified-badge">✓ Authenticated Member of A1 Networks</div>
                 {% endif %}
             </div>
 
-            <div class="section-title">Professional Summary</div>
-            <p style="line-height: 1.7;">A dedicated professional leveraging modern tools to build reliable solutions. Backed by authenticated peer reviews on the A1 Networks platform to guarantee project integrity.</p>
+            <div>
+                <div class="section-title">Professional Summary</div>
+                <p class="summary-text">A dedicated professional leveraging modern tools and collaborative models to build highly effective solutions. Backed by authenticated peer reviews on the A1 Networks platform to guarantee project and delivery integrity.</p>
+            </div>
 
-            <div class="section-title">Verified Project Portfolio</div>
-            
-            {% for project in projects %}
-                <div class="project-item">
-                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                        <h4>{{ project.title }}</h4>
-                        {% if project.external_link %}
-                            <a href="{{ project.external_link }}" style="color: var(--text-light); text-decoration: none; font-size: 0.85rem;">🔗 View Source</a>
-                        {% endif %}
-                    </div>
-                    
-                    <p>{{ project.description }}</p>
+            <div>
+                <div class="section-title">Verified Project Portfolio</div>
+                <div class="project-list" style="margin-top: 1rem;">
+                    {% for project in projects %}
+                        <div class="project-item">
+                            <div class="project-header">
+                                <h4>{{ project.title }}</h4>
+                                {% if project.external_link %}
+                                    <a href="{{ project.external_link }}" class="project-link" target="_blank" rel="noopener noreferrer">🔗 View Source</a>
+                                {% endif %}
+                            </div>
+                            
+                            <p class="project-desc">{{ project.description }}</p>
 
-                    {% if project.reviews.all %}
-                        <div class="review-box">
-                            {% for review in project.reviews.all %}
-                                <p class="review-text">"{{ review.review_text }}"</p>
-                                <p class="review-author">— Authenticated Peer Review by {{ review.reviewer.first_name }} {{ review.reviewer.last_name }}</p>
-                            {% endfor %}
+                            {% if project.reviews.all %}
+                                <div class="review-box" style="margin-top: 0.5rem;">
+                                    {% for review in project.reviews.all %}
+                                        <p class="review-text">"{{ review.review_text }}"</p>
+                                        <p class="review-author">— Authenticated Review by {{ review.reviewer.first_name }} {{ review.reviewer.last_name }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
-                    {% endif %}
+                    {% empty %}
+                        <p class="project-desc" style="font-style: italic;">Verified projects will populate here once added to the platform.</p>
+                    {% endfor %}
                 </div>
-            {% empty %}
-                <p style="color: var(--text-light); font-style: italic;">Verified projects will populate here once added to the platform.</p>
-            {% endfor %}
+            </div>
 
         </div>
     </div>

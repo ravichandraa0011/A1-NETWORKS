@@ -1,141 +1,84 @@
 {% extends 'network/base.html' %}
-
-{% block title %}Job Board |A1 Networks{% endblock %}
+{% block title %}Browse Opportunities | A1 Networks{% endblock %}
 
 {% block content %}
-<div class="main-container">    
-    <div style="text-align: center; margin-bottom: 50px;">
-        <h1 style="font-family: 'Cinzel', serif; color: var(--gold); font-size: 2.5rem; letter-spacing: 0.1em; margin-bottom: 10px;">Opportunities</h1>
-        <p style="color: var(--text-dim); font-size: 1.1rem;">Discover your next big role or gig.</p>
+<!-- ═══ HERO ═══ -->
+<div class="hero-section">
+    <h1>Explore <span class="accent">Opportunities</span></h1>
+    <p>Find the perfect role or task matched to your unique skillset.</p>
+</div>
+
+<div style="max-width: var(--container-wide); margin: 0 auto; padding: 0 var(--space-5);">
+
+    <!-- Search -->
+    <div class="glass-card static" style="padding: var(--space-5); margin-bottom: var(--space-10);">
+        <form method="GET" action="{% url 'jobs:job_list' %}" style="display: flex; gap: var(--space-4); margin: 0;">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search jobs by title, skills, or location..." style="flex-grow: 1; border-radius: var(--radius-full); padding: 12px 24px;">
+            <button type="submit" class="glass-btn" style="padding: 12px 32px;">Search</button>
+        </form>
     </div>
 
+    <!-- Recommended (if logged in) -->
     {% if recommended_jobs %}
-    <div style="margin-bottom: 50px;">
-        <h3 style="font-family: 'Cinzel', serif; color: var(--gold); border-bottom: 1px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px;">
-            ✨ Recommended For You
-        </h3>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+    <div style="margin-bottom: var(--space-12);">
+        <h2 style="font-size: var(--text-xl); margin-bottom: var(--space-6); display: flex; align-items: center; gap: var(--space-3);">
+            <span style="color: var(--accent);">✨</span> Recommended for You
+        </h2>
+        <div class="grid-cards">
             {% for job in recommended_jobs %}
-            <div class="glass-card" style="padding: 25px; border: 1px solid var(--gold); background: rgba(200,160,85,0.05); margin-bottom: 0;">
-                <h2 style="color: white; font-size: 1.2rem; margin: 0 0 5px 0;">{{ job.title }}</h2>
-                <p style="color: var(--text-warm); font-size: 0.9rem; margin: 0 0 15px 0;">{{ job.company }} • {{ job.location }}</p>
-                
-                <p style="color: var(--text-dim); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;">
-                    {{ job.description|truncatewords:15 }}
-                </p>
-                
-                <a href="{% url 'jobs:job_detail' job.id %}" class="glass-btn" style="display: block; text-align: center; text-decoration: none;">View Details</a>
-            </div>
+            <a href="{% url 'jobs:job_detail' job.id %}" style="text-decoration: none;">
+                <div class="glass-card" style="padding: var(--space-6); border-left: 4px solid var(--accent); margin-bottom: 0;">
+                    <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-2);">{{ job.title }}</h3>
+                    <p style="font-size: var(--text-sm); margin-bottom: var(--space-4);">{{ job.company }} • {{ job.location }}</p>
+                    {% if job.salary_range %}
+                        <span class="badge badge-accent">💰 {{ job.salary_range }}</span>
+                    {% endif %}
+                </div>
+            </a>
             {% endfor %}
         </div>
     </div>
     {% endif %}
 
-    <div>
-        <h3 style="font-family: 'Cinzel', serif; color: var(--text-warm); border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 20px;">
-            All Open Roles
-        </h3>
+    <!-- All Jobs -->
+    <div style="margin-bottom: var(--space-12);">
+        <div class="section-header">
+            <h2 class="section-title">All Opportunities</h2>
+            <a href="{% url 'jobs:post_job' %}" class="glass-btn" style="font-size: var(--text-sm); padding: 8px 18px;">+ Post a Job</a>
+        </div>
 
-        <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="stagger" style="display: flex; flex-direction: column; gap: var(--space-5);">
             {% for job in jobs %}
-            <div class="glass-card" style="padding: 25px; margin-bottom: 0; display: flex; justify-content: space-between; align-items: center;">
-                
-                <div style="flex-grow: 1;">
-                    <h2 style="color: white; font-size: 1.3rem; margin: 0 0 5px 0;">{{ job.title }}</h2>
-                    <p style="color: var(--text-dim); font-size: 0.95rem; margin: 0 0 10px 0;">
-                        <strong>{{ job.company }}</strong> • {{ job.location }}
-                    </p>
-                    
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <span style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; color: var(--text-warm);">
-                            {{ job.worker_type|default:job.industry }}
-                        </span>
+            <a href="{% url 'jobs:job_detail' job.id %}" style="text-decoration: none;">
+                <div class="glass-card" style="padding: var(--space-6); display: flex; justify-content: space-between; align-items: center; gap: var(--space-5); flex-wrap: wrap; margin-bottom: 0;">
+                    <div>
+                        <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-1);">{{ job.title }}</h3>
+                        <p style="color: var(--text-tertiary); font-size: var(--text-sm); margin: 0 0 var(--space-3) 0;">{{ job.company }} • {{ job.location }}</p>
+                        <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+                            {% if job.worker_type %}
+                                <span class="badge badge-neutral">{{ job.worker_type }}</span>
+                            {% endif %}
+                            {% if job.industry %}
+                                <span class="badge badge-neutral">{{ job.industry }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div style="text-align: right; flex-shrink: 0;">
                         {% if job.salary_range %}
-                        <span style="background: rgba(200,160,85,0.1); border: 1px solid rgba(200,160,85,0.3); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; color: var(--gold);">
-                            💰 {{ job.salary_range }}
-                        </span>
+                            <span style="font-family: var(--font-display); font-weight: 800; font-size: var(--text-lg); color: var(--accent); display: block;">{{ job.salary_range }}</span>
                         {% endif %}
+                        <span style="color: var(--text-tertiary); font-size: var(--text-xs); font-weight: 500;">Posted {{ job.created_at|timesince }} ago</span>
                     </div>
                 </div>
-
-                <div style="text-align: right; min-width: 150px;">
-                    <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 15px;">Posted {{ job.created_at|timesince }} ago</p>
-                    
-                    {% if job.posted_by == request.user %}
-                        <a href="{% url 'jobs:edit_job' job.id %}" class="glass-btn" style="text-decoration: none; padding: 10px 25px; background: rgba(200,160,85,0.15); border: 1px solid var(--gold); color: var(--gold);">✏️ Edit</a>
-                    
-                    {% elif job.id in applied_job_ids %}
-                        <button class="glass-btn job-withdraw-btn" 
-                                data-url="{% url 'jobs:withdraw_application' job.id %}"
-                                data-detail-url="{% url 'jobs:job_detail' job.id %}"
-                                style="padding: 10px 25px; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; cursor: pointer;">
-                            Withdraw
-                        </button>
-
-                    {% else %}
-                        <a href="{% url 'jobs:job_detail' job.id %}" class="glass-btn" style="text-decoration: none; padding: 10px 25px;">View Details</a>
-                    {% endif %}
-                </div>
-
-            </div>
+            </a>
             {% empty %}
-            <div class="glass-card" style="text-align: center; padding: 50px;">
-                <h3 style="color: var(--text-warm); margin-bottom: 10px;">No jobs available right now.</h3>
-                <p style="color: var(--text-dim);">Check back later or post an opportunity yourself!</p>
+            <div class="glass-card empty-state">
+                <span class="empty-state-icon">📭</span>
+                <h3>No open positions right now.</h3>
+                <p>Be the first to post an opportunity!</p>
             </div>
             {% endfor %}
         </div>
     </div>
-
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const withdrawButtons = document.querySelectorAll('.job-withdraw-btn');
-    const csrfToken = '{{ csrf_token }}';
-
-    withdrawButtons.forEach(button => {
-        button.addEventListener('click', async function(e) {
-            e.preventDefault();
-            
-            const btn = this;
-            const targetUrl = btn.getAttribute('data-url');
-            const detailUrl = btn.getAttribute('data-detail-url');
-            
-            const originalText = btn.innerHTML;
-            btn.innerHTML = 'Withdrawing...';
-            btn.style.opacity = '0.7';
-            btn.disabled = true;
-
-            try {
-                const response = await fetch(targetUrl, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                const data = await response.json();
-
-                if (data.status === 'withdrawn') {
-                    // Instantly change the button back to a "View Details" link styling
-                    btn.outerHTML = `<a href="${detailUrl}" class="glass-btn" style="text-decoration: none; padding: 10px 25px; display: inline-block;">View Details</a>`;
-                } else {
-                    btn.innerHTML = originalText;
-                    btn.style.opacity = '1';
-                    btn.disabled = false;
-                    alert(data.message);
-                }
-            } catch (error) {
-                console.error("Network error:", error);
-                btn.innerHTML = originalText;
-                btn.style.opacity = '1';
-                btn.disabled = false;
-            }
-        });
-    });
-});
-</script>
 {% endblock %}

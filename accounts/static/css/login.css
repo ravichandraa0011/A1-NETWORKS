@@ -1,151 +1,343 @@
-/* 1. Import Premium Geometric Font */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+/* ═══════════════════════════════════════════════════════════════
+   A1 NETWORKS — LOGIN PAGE STYLES v2.0
+   ═══════════════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-    /* ─── THE WORKHUB AMBER PALETTE ─── */
-    --primary: #f59e0b; /* The vibrant Amber from your screenshot */
-    --primary-hover: #d97706;
-    --bg-page: #FDFBF7; /* The exact warm cream/skin-tone background */
-    --card-bg: #ffffff;
-    --border-light: #f1f1ef;
-    
-    --text-dark: #0f172a; /* Deep Navy headings */
-    --text-muted: #64748b;
-    
-    --gold: var(--primary);
+    --accent: #f59e0b;
+    --accent-hover: #d97706;
+    --accent-light: rgba(245, 158, 11, 0.12);
+    --accent-glow: rgba(245, 158, 11, 0.4);
+    --bg-page: #fafaf9;
+    --bg-surface: #ffffff;
+    --bg-elevated: #f5f5f4;
+    --text-primary: #0c0a09;
+    --text-secondary: #57534e;
+    --text-tertiary: #a8a29e;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(0, 0, 0, 0.15);
+    --danger: #ef4444;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+    --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.1), 0 8px 20px rgba(0, 0, 0, 0.06);
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-display: 'Outfit', 'Inter', sans-serif;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body {
-    width: 100%; height: 100%;
-    overflow: hidden;
-    background: var(--bg-page);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    width: 100%;
+    min-height: 100vh;
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
 }
 
-/* ─── LOGIN CONTAINER ─── */
 body {
+    display: flex;
+    background: var(--bg-page);
+    overflow-x: hidden;
+}
+
+/* ─── SPLIT LAYOUT ─── */
+.login-page {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Left Panel - Brand */
+.login-brand {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0c0a09 0%, #292524 50%, #1c1917 100%);
+}
+
+.login-brand::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 40% 40%, var(--accent-glow), transparent 50%),
+                radial-gradient(circle at 60% 70%, rgba(251, 191, 36, 0.15), transparent 40%);
+    animation: brandGlow 12s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+
+@keyframes brandGlow {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(3%, -2%) rotate(5deg); }
+}
+
+.login-brand-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 400px;
+}
+
+.login-brand h1 {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+}
+
+.login-brand h1 span {
+    color: var(--accent);
+}
+
+.login-brand p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.1rem;
+    line-height: 1.7;
+}
+
+.brand-stats {
+    display: flex;
+    gap: 40px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brand-stat {
+    text-align: center;
+}
+
+.brand-stat strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.brand-stat span {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+}
+
+/* Right Panel - Form */
+.login-form-panel {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 40px;
+    background: var(--bg-page);
 }
 
-/* ─── LOGIN CARD (Solid White & Smooth) ─── */
-#login-card {
+.login-form-wrapper {
     width: 100%;
     max-width: 420px;
-    background: #ffffff !important;
-    border: 1px solid var(--border-light);
-    border-radius: 24px;
-    padding: 45px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.03) !important;
-    animation: fadeIn 0.8s ease;
+    animation: formEnter 0.6s var(--ease-out) forwards;
 }
 
-/* Brand Name */
-.brand-name {
-    font-size: 2.2rem;
+@keyframes formEnter {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-card {
+    background: var(--bg-surface);
+    padding: 44px;
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+}
+
+.login-card h2 {
+    font-family: var(--font-display);
     font-weight: 800;
-    color: var(--primary) !important;
-    margin-bottom: 30px;
-    text-align: center;
-    letter-spacing: -1px;
+    color: var(--text-primary);
+    font-size: 1.6rem;
+    margin-bottom: 6px;
 }
 
-/* Smooth Inputs */
+.login-card .subtitle {
+    color: var(--text-tertiary);
+    font-size: 0.95rem;
+    margin-bottom: 32px;
+}
+
+/* ─── INPUTS ─── */
 .c-input {
     width: 100%;
-    background: #ffffff !important;
-    border: 1.5px solid #e2e8f0 !important;
-    color: var(--text-dark) !important;
-    border-radius: 12px !important;
-    padding: 12px 18px !important;
-    font-size: 0.95rem !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    background: var(--bg-surface);
+    border: 1.5px solid var(--border-strong);
+    color: var(--text-primary);
+    border-radius: var(--radius-md);
+    padding: 13px 18px;
+    font-size: 0.95rem;
+    font-family: var(--font-body);
     outline: none;
-    transition: all 0.25s ease !important;
+    transition: all 0.25s var(--ease-out);
 }
 
 .c-input:focus {
-    border-color: var(--primary) !important;
-    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1) !important;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
 }
 
-/* The "Logout" Style Button (Solid Amber) */
+.c-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* ─── BUTTON ─── */
 .c-btn {
     width: 100%;
-    background: var(--primary) !important;
-    color: #ffffff !important;
+    background: var(--accent);
+    color: #ffffff;
     border: none;
-    border-radius: 50px !important; /* Perfect Pill Shape */
-    padding: 14px !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
-    font-size: 0.95rem !important;
-    font-weight: 700 !important;
+    border-radius: var(--radius-full);
+    padding: 14px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2) !important;
-    transition: all 0.3s ease;
-    text-transform: none;
-    letter-spacing: normal;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.2);
+    transition: all 0.25s var(--ease-out);
 }
 
 .c-btn:hover {
-    background: var(--primary-hover) !important;
+    background: var(--accent-hover);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3) !important;
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
 }
 
-/* Links & Text */
-.c-forgot a, .c-signup a {
-    color: var(--primary) !important;
-    font-weight: 700;
-    text-decoration: none;
+.c-btn:active {
+    transform: translateY(0) scale(0.98);
 }
 
-.c-forgot a:hover, .c-signup a:hover {
-    text-decoration: underline;
-}
-
-.c-welcome {
-    text-align: center;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-dark);
-    margin-bottom: 8px;
-}
-
-.c-subtext {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    margin-bottom: 30px;
-}
-
-/* Social Icons (Circles) */
+/* ─── SOCIAL BUTTONS ─── */
 .c-soc {
-    width: 44px;
-    height: 44px;
-    border: 1.5px solid #e2e8f0 !important;
-    background: #ffffff !important;
-    color: var(--text-dark) !important;
+    width: 46px;
+    height: 46px;
+    border: 1.5px solid var(--border-strong);
+    background: var(--bg-surface);
+    color: var(--text-primary);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    transition: all 0.2s;
+    font-size: 1rem;
+    transition: all 0.2s ease;
     cursor: pointer;
 }
 
 .c-soc:hover {
-    border-color: var(--primary) !important;
-    color: var(--primary) !important;
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-light);
     transform: translateY(-2px);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+/* ─── ERROR BOX ─── */
+.error-box {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.error-box p {
+    color: var(--danger);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* ─── LINKS ─── */
+.c-forgot a, .c-signup a {
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.c-forgot a:hover, .c-signup a:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}
+
+.c-signup {
+    text-align: center;
+    margin-top: 28px;
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
+}
+
+.c-signup a {
+    margin-left: 4px;
+}
+
+/* ─── WELCOME ─── */
+.c-welcome {
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.c-subtext {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 0.95rem;
+    margin-bottom: 30px;
+}
+
+/* ─── PASSWORD TOGGLE ─── */
+.pwd-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--text-tertiary);
+    font-size: 1.1rem;
+    transition: color 0.15s ease;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.pwd-toggle:hover {
+    color: var(--accent);
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+    .login-brand { display: none; }
+    .login-form-panel { padding: 20px; }
+    .login-card { padding: 32px 24px; }
+}
+
+@media (max-width: 480px) {
+    .login-card { padding: 28px 20px; }
 }

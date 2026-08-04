@@ -11,7 +11,7 @@ from .models import Job
 # MATCH THE SENDER NAME HERE TOO
 @receiver(post_save, sender=Job) 
 def notify_job_creation(sender, instance, created, **kwargs):
-    print(f"\n🚀🚨 BEEP BEEP! SIGNAL FIRED! 🚨🚀\n")
+    print("\n--- JOB SIGNAL FIRED ---\n")
 
     if created:
         try:

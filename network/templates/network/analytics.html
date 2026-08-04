@@ -2,11 +2,11 @@
 {% block title %}Analytics | A1 Networks{% endblock %}
 
 {% block content %}
-<div class="main-container">    
-    <div class="glass-card" style="padding: 40px;">
-        <h2 style="font-size: 2rem; margin-bottom: 5px;">📊 Profile Analytics</h2>
-        <p style="color: var(--text-muted); margin-bottom: 30px;">Track your visibility and network reach over the last 7 days.</p>
-        
+<div class="main-container">
+    <div class="glass-card static" style="padding: var(--space-10);">
+        <h2 style="font-size: var(--text-2xl); margin-bottom: var(--space-2);">📊 Profile Analytics</h2>
+        <p style="color: var(--text-tertiary); margin-bottom: var(--space-8); font-size: var(--text-base);">Track your visibility and network reach over the last 7 days.</p>
+
         <div style="position: relative; height: 400px; width: 100%;">
             <canvas id="viewsChart"></canvas>
         </div>
@@ -20,19 +20,19 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Javascript safely reads the data tags without crashing!
         const dates = JSON.parse(document.getElementById('dates-data').textContent);
         const dataPoints = JSON.parse(document.getElementById('chart-data').textContent);
-
         const canvas = document.getElementById('viewsChart');
-        if (!canvas) return; 
-        
+        if (!canvas) return;
         const ctx = canvas.getContext('2d');
-        
-        // Create a beautiful Amber Gradient
+
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+        const tickColor = isDark ? '#78716c' : '#64748b';
+
         let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(245, 158, 11, 0.5)'); 
-        gradient.addColorStop(1, 'rgba(245, 158, 11, 0.0)'); 
+        gradient.addColorStop(0, 'rgba(245, 158, 11, 0.4)');
+        gradient.addColorStop(1, 'rgba(245, 158, 11, 0.0)');
 
         new Chart(ctx, {
             type: 'line',
@@ -44,31 +44,22 @@
                     borderColor: '#f59e0b',
                     backgroundColor: gradient,
                     borderWidth: 3,
-                    pointBackgroundColor: '#ffffff',
+                    pointBackgroundColor: isDark ? '#1c1917' : '#ffffff',
                     pointBorderColor: '#f59e0b',
                     pointBorderWidth: 2,
                     pointRadius: 5,
                     pointHoverRadius: 8,
                     fill: true,
-                    tension: 0.4 // Makes the line smoothly curved
+                    tension: 0.4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { stepSize: 1, color: '#64748b' },
-                        grid: { color: 'rgba(0,0,0,0.05)' }
-                    },
-                    x: {
-                        ticks: { color: '#64748b' },
-                        grid: { display: false }
-                    }
+                    y: { beginAtZero: true, ticks: { stepSize: 1, color: tickColor }, grid: { color: gridColor } },
+                    x: { ticks: { color: tickColor }, grid: { display: false } }
                 }
             }
         });

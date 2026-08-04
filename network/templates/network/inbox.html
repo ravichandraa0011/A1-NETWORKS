@@ -1,88 +1,76 @@
 {% extends 'network/base.html' %}
 
 {% block content %}
-<div style="display: flex; gap: 20px; height: 80vh; max-width: 1200px; margin: 0 auto;">
+<div style="display: flex; gap: var(--space-5); height: 80vh; max-width: 1200px; margin: 0 auto; padding: 0 var(--space-5);">
 
-    <div class="glass-card" style="width: 30%; display: flex; flex-direction: column; padding: 20px; height: 100%;">
-        <h2 class="glass-title" style="font-size: 1.1rem; margin-bottom: 20px;">My Connections</h2>
-        
-        <div style="flex-grow: 1; overflow-y: auto; padding-right: 5px;">
+    <!-- ═══ CONTACTS SIDEBAR ═══ -->
+    <div class="glass-card static" style="width: 30%; display: flex; flex-direction: column; padding: var(--space-5); height: 100%; min-width: 240px;">
+        <h2 style="font-size: var(--text-base); margin-bottom: var(--space-5); color: var(--text-primary);">My Connections</h2>
+
+        <div style="flex-grow: 1; overflow-y: auto; padding-right: var(--space-1);">
             {% for contact in contacts %}
-            <a href="{% url 'network:inbox_chat' contact.username %}" style="text-decoration: none;">
-                <div style="background: {% if active_contact == contact %}rgba(245, 158, 11, 0.08){% else %}transparent{% endif %}; border: 1px solid {% if active_contact == contact %}var(--primary){% else %}var(--border-light){% endif %}; border-radius: 12px; padding: 12px; display: flex; gap: 12px; align-items: center; margin-bottom: 10px; transition: all 0.2s ease;">
-                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 0.9rem;">
+            <a href="{% url 'network:inbox_chat' contact.username %}" style="text-decoration: none; display: block;">
+                <div style="background: {% if active_contact == contact %}var(--accent-light){% else %}transparent{% endif %}; border: 1px solid {% if active_contact == contact %}var(--border-accent){% else %}var(--border){% endif %}; border-radius: var(--radius-md); padding: var(--space-3); display: flex; gap: var(--space-3); align-items: center; margin-bottom: var(--space-2); transition: all 0.2s ease;">
+                    <div class="avatar avatar-md" style="background: var(--accent); color: white; font-size: var(--text-sm);">
                         {{ contact.first_name|first }}{{ contact.last_name|first }}
                     </div>
                     <div style="overflow: hidden;">
-                        <h4 style="color: var(--text-dark); font-size: 0.95rem; font-weight: 600; margin: 0;">{{ contact.first_name }} {{ contact.last_name }}</h4>
-                        <p style="color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; margin-top: 2px;">{{ contact.headline|default:"Professional" }}</p>
-                    
+                        <h4 style="color: var(--text-primary); font-size: var(--text-sm); font-weight: 600; margin: 0;">{{ contact.first_name }} {{ contact.last_name }}</h4>
+                        <p style="color: var(--text-tertiary); font-size: var(--text-xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 2px 0 0 0;">{{ contact.headline|default:"Professional" }}</p>
                     </div>
                 </div>
             </a>
             {% empty %}
-            <p style="color: var(--text-muted); font-style: italic; text-align: center; font-size: 0.9rem;">No connections found.</p>
+            <p style="color: var(--text-tertiary); font-style: italic; text-align: center; font-size: var(--text-sm); padding: var(--space-5) 0;">No connections found.</p>
             {% endfor %}
         </div>
     </div>
 
-    <div class="glass-card" style="width: 70%; display: flex; flex-direction: column; padding: 0; height: 100%; overflow: hidden;">
-        
+    <!-- ═══ CHAT AREA ═══ -->
+    <div class="glass-card static" style="width: 70%; display: flex; flex-direction: column; padding: 0; height: 100%; overflow: hidden;">
         {% if active_contact %}
-            <div style="padding: 20px; border-bottom: 1px solid var(--border-light); background: rgba(255,255,255,0.5);">
-                <div style="display: flex; gap: 15px; align-items: center;">
-                    <div style="width: 45px; height: 45px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 1.1rem;">
-                        {{ active_contact.first_name|first }}
-                    </div>
-                    <h3 style="color: var(--text-dark); font-size: 1.1rem; margin: 0; font-weight: 700;">{{ active_contact.first_name }} {{ active_contact.last_name }}</h3>
+            <!-- Chat Header -->
+            <div style="padding: var(--space-5); border-bottom: 1px solid var(--border); background: var(--bg-elevated);">
+                <div style="display: flex; gap: var(--space-4); align-items: center;">
+                    <div class="avatar avatar-md" style="background: var(--accent); color: white;">{{ active_contact.first_name|first }}</div>
+                    <h3 style="font-size: var(--text-base); font-weight: 700;">{{ active_contact.first_name }} {{ active_contact.last_name }}</h3>
                 </div>
             </div>
 
-            <div id="chat-box" style="flex-grow: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 15px; background: #fafaf9;">
+            <!-- Messages -->
+            <div id="chat-box" style="flex-grow: 1; overflow-y: auto; padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); background: var(--bg-primary);">
                 {% for msg in messages %}
-                    
                     <div class="{% if msg.sender == request.user %}message-sent{% else %}message-received{% endif %}" style="align-self: {% if msg.sender == request.user %}flex-end{% else %}flex-start{% endif %};">
                         <p style="margin: 0; font-weight: 500;">{{ msg.content }}</p>
                         <span class="message-time">{{ msg.timestamp|time:"H:i" }}</span>
                     </div>
-
                 {% endfor %}
             </div>
 
-            <form method="POST" style="padding: 20px; border-top: 1px solid var(--border-light); background: #ffffff; display: flex; gap: 15px; align-items: center;">
+            <!-- Input -->
+            <form method="POST" style="padding: var(--space-5); border-top: 1px solid var(--border); background: var(--bg-surface); display: flex; gap: var(--space-3); align-items: center;">
                 {% csrf_token %}
-                <input type="text" name="content" placeholder="Type a message..." required autocomplete="off" style="flex-grow: 1; border-radius: 30px; margin: 0;">
-                <button type="submit" class="glass-btn" style="border-radius: 30px; padding: 12px 28px; margin: 0;">Send</button>
+                <input type="text" name="content" placeholder="Type a message..." required autocomplete="off" style="flex-grow: 1; border-radius: var(--radius-full); margin: 0;">
+                <button type="submit" class="glass-btn" style="border-radius: var(--radius-full); padding: 12px 24px;">Send</button>
             </form>
 
         {% else %}
-            <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--text-muted);">
-                <span style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;">💬</span>
-                <p style="font-weight: 600; letter-spacing: 0.5px; font-size: 1.1rem;">Select a connection to start messaging</p>
+            <div class="empty-state" style="flex-grow: 1; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                <span class="empty-state-icon">💬</span>
+                <p style="font-weight: 600; font-size: var(--text-base); color: var(--text-tertiary);">Select a connection to start messaging</p>
             </div>
         {% endif %}
     </div>
 </div>
-<script>
-    // Existing chat scroll script
-    const chatBox = document.getElementById('chat-box');
-    if (chatBox) {
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
 
-    // ─── NEW: PEER-TO-PEER DATA CALL LOGIC ───
+<script>
+    const chatBox = document.getElementById('chat-box');
+    if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+
     function startDataCall(currentUser, contactUser) {
-        // 1. Sort the usernames alphabetically so both users generate the exact same room name
         const participants = [currentUser, contactUser].sort();
-        
-        // 2. Create a unique, private room ID
         const secretRoomName = "A1Networks-PrivateCall-" + participants[0] + "-" + participants[1];
-        
-        // 3. Open the secure calling interface (Supports both Voice and Video!)
-        const callUrl = "https://meet.jit.si/" + secretRoomName;
-        
-        // Opens the call in a neat popup window
-        window.open(callUrl, "A1CallWindow", "width=900,height=700,border=0,scrollbars=no");
+        window.open("https://meet.jit.si/" + secretRoomName, "A1CallWindow", "width=900,height=700");
     }
 </script>
 {% endblock %}

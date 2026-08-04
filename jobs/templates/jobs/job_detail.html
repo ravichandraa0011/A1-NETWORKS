@@ -1,151 +1,127 @@
 {% extends 'network/base.html' %}
-
-{% block title %}{{ job.title }} |A1 Networks {% endblock %}
+{% block title %}{{ job.title }} | A1 Networks{% endblock %}
 
 {% block content %}
-<div class="main-container">    
-    <div class="glass-card" style="padding: 40px; margin-bottom: 30px; position: relative; overflow: hidden;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+<div class="main-container">
+
+    <!-- ═══ JOB HEADER ═══ -->
+    <div class="glass-card static" style="padding: var(--space-10); margin-bottom: var(--space-8);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-5);">
             <div>
-                <h1 style="font-family: 'Cinzel', serif; color: var(--gold); margin: 0;">{{ job.title }}</h1>
-                <p style="color: var(--text-warm); font-size: 1.2rem; margin: 5px 0;">{{ job.company }} • {{ job.location }}</p>
-                <div style="margin-top: 15px;">
-                    <span style="background: rgba(200,160,85,0.1); border: 1px solid var(--gold); padding: 5px 15px; border-radius: 20px; color: var(--gold); font-size: 0.8rem;">
-                        {{ job.worker_type|default:job.industry }}
-                    </span>
+                <h1 style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">{{ job.title }}</h1>
+                <p style="color: var(--text-secondary); font-size: var(--text-lg); margin-bottom: var(--space-4);">{{ job.company }} • {{ job.location }}</p>
+                <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+                    {% if job.worker_type %}
+                        <span class="badge badge-accent">{{ job.worker_type }}</span>
+                    {% elif job.industry %}
+                        <span class="badge badge-accent">{{ job.industry }}</span>
+                    {% endif %}
                 </div>
             </div>
-            
-            <div style="text-align: right;">
+
+            <div style="text-align: right; flex-shrink: 0;">
                 {% if job.posted_by == request.user %}
-                    <a href="{% url 'jobs:edit_job' job.id %}" class="glass-btn" style="background: rgba(200,160,85,0.15); border: 1px solid var(--gold); color: var(--gold); text-decoration: none; transition: 0.3s;">
-                        ✏️ Edit Posting
-                    </a>
+                    <a href="{% url 'jobs:edit_job' job.id %}" class="glass-btn-outline" style="padding: 10px 24px;">✏️ Edit Posting</a>
                 {% elif user_app %}
                     {% if user_app.status == 'pending' %}
-                        <button class="glass-btn job-withdraw-btn" 
-                                data-url="{% url 'jobs:withdraw_application' job.id %}"
-                                style="background: rgba(239, 68, 68, 0.1) !important; border: 1px solid #ef4444 !important; color: #ef4444 !important; cursor: pointer; padding: 12px 30px; font-weight: bold;">
-                            Withdraw Application
-                        </button>
+                        <button class="glass-btn-danger job-withdraw-btn" data-url="{% url 'jobs:withdraw_application' job.id %}" style="padding: 12px 30px;">Withdraw Application</button>
                     {% else %}
-                        <span class="glass-btn" style="border-color: #10b981; color: #10b981; cursor: default; background: rgba(16,185,129,0.1); padding: 12px 30px;">
-                            Applied ✅ ({{ user_app.status|title }})
-                        </span>
+                        <span class="badge badge-success" style="padding: 10px 20px; font-size: var(--text-sm);">Applied ✅ ({{ user_app.status|title }})</span>
                     {% endif %}
                 {% else %}
                     <form method="POST" action="{% url 'jobs:apply_to_job' job.id %}" style="display:inline;">
                         {% csrf_token %}
-                        <button type="submit" class="glass-btn" style="padding: 12px 30px; cursor: pointer;">Apply for Role</button>
+                        <button type="submit" class="glass-btn" style="padding: 12px 30px;">Apply for Role</button>
                     </form>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
-        
-        <div class="glass-card" style="padding: 30px;">
-            <h3 style="font-family: 'Cinzel', serif; color: var(--gold);">Requirement Details</h3>
-            <p style="color: #fff; line-height: 1.6; white-space: pre-wrap;">{{ job.description }}</p>
-            
-            <h4 style="font-family: 'Cinzel', serif; color: var(--gold); margin-top: 30px;">Required Skills</h4>
-            <p style="color: var(--text-dim);">{{ job.required_skills }}</p>
+    <!-- ═══ CONTENT GRID ═══ -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-8);">
+        <!-- Left: Description -->
+        <div class="glass-card static" style="padding: var(--space-8);">
+            <h3 style="margin-bottom: var(--space-5);">Requirement Details</h3>
+            <p style="color: var(--text-primary); line-height: 1.8; white-space: pre-wrap;">{{ job.description }}</p>
+
+            {% if job.required_skills %}
+            <h4 style="margin-top: var(--space-8); margin-bottom: var(--space-3);">Required Skills</h4>
+            <p style="color: var(--text-secondary);">{{ job.required_skills }}</p>
+            {% endif %}
         </div>
 
+        <!-- Right: Sidebar -->
         <div>
-            <div class="glass-card" style="padding: 30px; text-align: center; margin-bottom: 20px;">
-                <h4 style="color: var(--text-dim); margin: 0;">Salary Range</h4>
-                <h2 style="color: var(--gold); margin: 10px 0;">{{ job.salary_range }}</h2>
-                <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 20px 0;">
-                <p style="color: var(--text-dim); font-size: 0.9rem;">Posted by @{{ job.posted_by.username }}</p>
+            <div class="glass-card static" style="padding: var(--space-8); text-align: center; margin-bottom: var(--space-5);">
+                <span style="font-size: var(--text-sm); color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Salary Range</span>
+                <p style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 800; color: var(--accent); margin: var(--space-3) 0;">{{ job.salary_range|default:"Not Disclosed" }}</p>
+                <div style="border-top: 1px solid var(--border); margin-top: var(--space-5); padding-top: var(--space-5);">
+                    <p style="color: var(--text-tertiary); font-size: var(--text-sm);">Posted by <a href="{% url 'network:profile' job.posted_by.username %}" style="color: var(--accent); font-weight: 600;">@{{ job.posted_by.username }}</a></p>
+                </div>
             </div>
 
             {% if job.contact_number %}
-            <div class="glass-card" style="padding: 20px; text-align: center; border-color: var(--green);">
-                <h4 style="color: var(--text-dim); margin: 0 0 10px 0; font-size: 0.9rem;">Contact for Hiring</h4>
-                <span style="background: rgba(45,107,69,0.2); padding: 8px 15px; border-radius: 8px; font-size: 1.1rem; color: #4ade80; font-weight: bold; display: inline-block;">
+            <div class="glass-card static" style="padding: var(--space-5); text-align: center; border-left: 4px solid var(--success);">
+                <span style="font-size: var(--text-sm); color: var(--text-tertiary); font-weight: 600;">Contact for Hiring</span>
+                <p style="background: var(--success-light); padding: 8px 16px; border-radius: var(--radius-sm); font-size: var(--text-lg); color: var(--success); font-weight: bold; display: inline-block; margin-top: var(--space-3);">
                     📞 {{ job.contact_number }}
-                </span>
+                </p>
             </div>
             {% endif %}
         </div>
     </div>
 
+    <!-- ═══ MANAGE APPLICATIONS (Owner Only) ═══ -->
     {% if job.posted_by == request.user %}
-    <div class="glass-card" style="margin-top: 30px; padding: 30px;">
-        <h3 style="font-family: 'Cinzel', serif; color: var(--gold); border-bottom: 1px solid var(--glass-border); padding-bottom: 15px;">Manage Applications</h3>
-        
+    <div class="glass-card static" style="margin-top: var(--space-8); padding: var(--space-8);">
+        <div class="section-header" style="margin-bottom: var(--space-5);">
+            <h3 class="section-title">Manage Applications</h3>
+        </div>
+
         {% for app in job.applications.all %}
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4) 0; border-bottom: 1px solid var(--border);">
             <div>
-                <strong style="color: white; font-size: 1.1rem;">{{ app.applicant.first_name }} {{ app.applicant.last_name }}</strong>
-                <p style="color: var(--text-dim); margin: 0; font-size: 0.85rem;">@{{ app.applicant.username }} • Applied {{ app.created_at|timesince }} ago</p>
+                <strong style="color: var(--text-primary); font-size: var(--text-base);">{{ app.applicant.first_name }} {{ app.applicant.last_name }}</strong>
+                <p style="color: var(--text-tertiary); margin: 2px 0 0 0; font-size: var(--text-xs);">@{{ app.applicant.username }} • Applied {{ app.created_at|timesince }} ago</p>
             </div>
-            
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: var(--space-3); align-items: center;">
                 {% if app.status == 'pending' %}
-                    <a href="{% url 'jobs:manage_app' app.id 'accept' %}" class="glass-btn" style="color: #10b981; border-color: #10b981;">Accept</a>
-                    <a href="{% url 'jobs:manage_app' app.id 'reject' %}" class="glass-btn" style="color: #ef4444; border-color: #ef4444;">Reject</a>
+                    <a href="{% url 'jobs:manage_app' app.id 'accept' %}" class="glass-btn-ghost" style="color: var(--success); border-color: var(--success); padding: 6px 14px; font-size: var(--text-xs);">Accept</a>
+                    <a href="{% url 'jobs:manage_app' app.id 'reject' %}" class="glass-btn-ghost" style="color: var(--danger); border-color: var(--danger); padding: 6px 14px; font-size: var(--text-xs);">Reject</a>
                 {% elif app.status == 'accepted' %}
-                    <a href="{% url 'network:inbox_chat' app.applicant.username %}" class="glass-btn">💬 Chat</a>
-                    <span style="color: #10b981; align-self: center; margin-left: 10px;">Accepted</span>
+                    <a href="{% url 'network:inbox_chat' app.applicant.username %}" class="glass-btn-ghost" style="padding: 6px 14px; font-size: var(--text-xs);">💬 Chat</a>
+                    <span class="badge badge-success">Accepted</span>
                 {% else %}
-                    <span style="color: #ef4444; align-self: center;">Rejected</span>
+                    <span class="badge badge-danger">Rejected</span>
                 {% endif %}
             </div>
         </div>
         {% empty %}
-        <p style="text-align: center; color: var(--text-dim); padding: 20px;">No applications yet.</p>
+        <p style="text-align: center; color: var(--text-tertiary); padding: var(--space-5);">No applications yet.</p>
         {% endfor %}
     </div>
     {% endif %}
-    
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const withdrawButtons = document.querySelectorAll('.job-withdraw-btn');
     const csrfToken = '{{ csrf_token }}';
-
     withdrawButtons.forEach(button => {
         button.addEventListener('click', async function(e) {
             e.preventDefault();
-            
-            const btn = this;
-            const targetUrl = btn.getAttribute('data-url');
-            
+            const btn = this, targetUrl = btn.getAttribute('data-url');
             const originalText = btn.innerHTML;
-            btn.innerHTML = 'Withdrawing...';
-            btn.style.opacity = '0.7';
-            btn.disabled = true;
-
+            btn.innerHTML = 'Withdrawing...'; btn.style.opacity = '0.7'; btn.disabled = true;
             try {
                 const response = await fetch(targetUrl, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken,
-                        'Content-Type': 'application/json'
-                    }
+                    method: 'POST', headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' }
                 });
-                
                 const data = await response.json();
-
-                if (data.status === 'withdrawn') {
-                    // Success! Refresh the page instantly to show the Apply button again
-                    window.location.reload();
-                } else {
-                    btn.innerHTML = originalText;
-                    btn.style.opacity = '1';
-                    btn.disabled = false;
-                    alert(data.message);
-                }
-            } catch (error) {
-                console.error("Network error:", error);
-                btn.innerHTML = originalText;
-                btn.style.opacity = '1';
-                btn.disabled = false;
-            }
+                if (data.status === 'withdrawn') { window.location.reload(); }
+                else { btn.innerHTML = originalText; btn.style.opacity = '1'; btn.disabled = false; alert(data.message); }
+            } catch (error) { btn.innerHTML = originalText; btn.style.opacity = '1'; btn.disabled = false; }
         });
     });
 });

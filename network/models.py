@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
 
 
 # ─── USER PROFILE ───
@@ -133,9 +134,26 @@ class Comment(models.Model):
 
 # ─── 5. TOPIC GROUPS & CHAT ───
 class TopicGroup(models.Model):
+    CATEGORY_CHOICES = [
+        ('tech', 'Technology'),
+        ('design', 'Design'),
+        ('business', 'Business'),
+        ('career', 'Career'),
+        ('other', 'Other'),
+    ]
+
     name = models.CharField(max_length=100)
     description = models.TextField()
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='joined_groups', blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='created_groups'
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.name
@@ -146,3 +164,6 @@ class GroupMessage(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']

@@ -1,0 +1,121 @@
+{% extends 'network/base.html' %}
+{% block title %}Create Group | A1 Networks{% endblock %}
+
+{% block content %}
+<div class="container-narrow" style="margin-top: var(--space-10); margin-bottom: var(--space-12);">
+    
+    <div style="text-align: center; margin-bottom: var(--space-8);">
+        <a href="{% url 'network:groups' %}" style="color: var(--text-tertiary); text-decoration: none; font-size: var(--text-sm); font-weight: 500; display: inline-flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4);">
+            ← Back to Groups
+        </a>
+        <h1 class="glass-title" style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">Create a Group</h1>
+        <p style="color: var(--text-secondary); font-size: var(--text-sm); margin: 0;">Start a community around a topic you're passionate about.</p>
+    </div>
+
+    <div class="glass-card static" style="padding: var(--space-8); border-radius: var(--radius-xl);">
+        <form method="POST" action="{% url 'network:create_group' %}" id="create-group-form">
+            {% csrf_token %}
+
+            <!-- Group Name -->
+            <div class="form-group" style="margin-bottom: var(--space-6);">
+                <label style="display: block; font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-2);">
+                    Group Name <span style="color: var(--danger);">*</span>
+                </label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--accent); font-weight: 700; font-size: var(--text-base);">#</span>
+                    <input type="text" name="name" id="group-name-input" value="{{ form.name.value|default:'' }}" 
+                           placeholder="e.g. Python Developers, UI/UX Design" required maxlength="100"
+                           style="width: 100%; padding-left: 36px; border-radius: var(--radius-md);">
+                </div>
+                {% if form.name.errors %}
+                <p style="color: var(--danger); font-size: var(--text-xs); margin-top: var(--space-1);">{{ form.name.errors.0 }}</p>
+                {% endif %}
+                <p style="color: var(--text-tertiary); font-size: var(--text-xs); margin-top: var(--space-1);">This will be the hashtag for your group. Keep it short and memorable.</p>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group" style="margin-bottom: var(--space-6);">
+                <label style="display: block; font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-2);">
+                    Description <span style="color: var(--danger);">*</span>
+                </label>
+                <textarea name="description" id="group-desc-input" rows="3" required
+                          placeholder="What is this group about? Describe the topics and who should join..."
+                          style="width: 100%; border-radius: var(--radius-md); resize: vertical; min-height: 80px;">{{ form.description.value|default:'' }}</textarea>
+                {% if form.description.errors %}
+                <p style="color: var(--danger); font-size: var(--text-xs); margin-top: var(--space-1);">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Category -->
+            <div class="form-group" style="margin-bottom: var(--space-8);">
+                <label style="display: block; font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-2);">
+                    Category
+                </label>
+                <select name="category" id="group-category-input" style="width: 100%; border-radius: var(--radius-md); cursor: pointer;">
+                    <option value="other" {% if form.category.value == 'other' or not form.category.value %}selected{% endif %}>Other</option>
+                    <option value="tech" {% if form.category.value == 'tech' %}selected{% endif %}>Technology</option>
+                    <option value="design" {% if form.category.value == 'design' %}selected{% endif %}>Design</option>
+                    <option value="business" {% if form.category.value == 'business' %}selected{% endif %}>Business</option>
+                    <option value="career" {% if form.category.value == 'career' %}selected{% endif %}>Career</option>
+                </select>
+                {% if form.category.errors %}
+                <p style="color: var(--danger); font-size: var(--text-xs); margin-top: var(--space-1);">{{ form.category.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Live Preview -->
+            <div style="margin-bottom: var(--space-8);">
+                <p style="font-size: var(--text-xs); font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--space-3);">Preview</p>
+                <div class="glass-card" style="padding: var(--space-5); pointer-events: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-2);">
+                        <span id="preview-category" style="background: var(--accent-light); color: var(--accent); padding: 2px 10px; border-radius: var(--radius-full); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Other</span>
+                        <span style="color: var(--text-tertiary); font-size: var(--text-xs);">by {{ request.user.first_name }}</span>
+                    </div>
+                    <h3 id="preview-name" style="color: var(--accent); font-size: var(--text-xl); font-weight: 700; margin-bottom: var(--space-2);">#GroupName</h3>
+                    <p id="preview-desc" style="color: var(--text-secondary); font-size: var(--text-sm); line-height: 1.6;">Your group description will appear here...</p>
+                    <div style="margin-top: var(--space-4); border-top: 1px solid var(--border); padding-top: var(--space-3); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-tertiary); font-size: var(--text-xs); font-weight: 600;">👥 1 member</span>
+                        <span class="glass-btn-ghost" style="padding: 6px 16px; font-size: var(--text-xs);">Open →</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div style="display: flex; gap: var(--space-4); justify-content: flex-end;">
+                <a href="{% url 'network:groups' %}" class="glass-btn-ghost" style="padding: 12px 28px; border-radius: var(--radius-full); text-decoration: none;">Cancel</a>
+                <button type="submit" class="glass-btn" style="padding: 12px 32px; border-radius: var(--radius-full); font-size: var(--text-sm);">
+                    ✦ Create Group
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const nameInput = document.getElementById('group-name-input');
+    const descInput = document.getElementById('group-desc-input');
+    const catInput = document.getElementById('group-category-input');
+    const previewName = document.getElementById('preview-name');
+    const previewDesc = document.getElementById('preview-desc');
+    const previewCat = document.getElementById('preview-category');
+
+    const categoryLabels = {
+        'other': 'Other', 'tech': 'Technology', 'design': 'Design',
+        'business': 'Business', 'career': 'Career'
+    };
+
+    nameInput.addEventListener('input', () => {
+        previewName.textContent = '#' + (nameInput.value || 'GroupName');
+    });
+
+    descInput.addEventListener('input', () => {
+        previewDesc.textContent = descInput.value || 'Your group description will appear here...';
+    });
+
+    catInput.addEventListener('change', () => {
+        previewCat.textContent = categoryLabels[catInput.value] || 'Other';
+    });
+});
+</script>
+{% endblock %}

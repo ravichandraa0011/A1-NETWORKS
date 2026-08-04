@@ -4,133 +4,76 @@
 {% block title %}Directory | A1 Networks{% endblock %}
 
 {% block content %}
-<div style="width: 100%; height: 300px; margin-bottom: 40px; border-radius: 0 0 30px 30px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-    
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80'); background-size: cover; background-position: center; z-index: 1;"></div>
-    
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.4) 100%); z-index: 2;"></div>
-
-    <div style="position: relative; z-index: 3; padding: 0 20px;">
-        <h1 style="color: #ffffff; font-size: 2.8rem; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -1px; text-shadow: 0 2px 10px rgba(0,0,0,0.3);">
-            The <span style="color: var(--primary);">A1 Networks</span> Directory
-        </h1>
-        <p style="color: #e2e8f0; font-size: 1.1rem; font-weight: 500; margin: 0; max-width: 600px; margin-left: auto; margin-right: auto;">
-            Connect with top-tier tradespeople, contractors, and professionals in your area.
-        </p>
-    </div>
+<!-- ═══ HERO SECTION ═══ -->
+<div class="hero-section">
+    <h1>The <span class="accent">A1 Networks</span> Directory</h1>
+    <p>Connect with top-tier tradespeople, contractors, and professionals in your area.</p>
 </div>
 
-<div style="max-width: 1100px; margin: 0 auto; padding: 0 20px;">
-    
-    <div class="glass-card" style="padding: 20px; margin-bottom: 40px; border: 1px solid var(--border-light);">
-        <form method="GET" action="{% url 'network:directory' %}" style="display: flex; gap: 15px; margin: 0;">
-            <input type="text" name="q" value="{{ query }}" placeholder="Search by name, trade, or skills..." class="glass-input" style="flex-grow: 1; border-radius: 50px !important; padding: 12px 20px; font-size: 1rem; outline: none; border: 1px solid var(--border-light);">
-            <button type="submit" class="glass-btn" style="border-radius: 50px !important; padding: 12px 35px !important; font-size: 1rem;">Search</button>
+<div style="max-width: var(--container-wide); margin: 0 auto; padding: 0 var(--space-5);">
+
+    <!-- Search -->
+    <div class="glass-card static" style="padding: var(--space-5); margin-bottom: var(--space-10);">
+        <form method="GET" action="{% url 'network:directory' %}" style="display: flex; gap: var(--space-4); margin: 0;">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search by name, trade, or skills..." style="flex-grow: 1; border-radius: var(--radius-full); padding: 12px 24px;">
+            <button type="submit" class="glass-btn" style="padding: 12px 32px;">Search</button>
         </form>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; padding-bottom: 50px;">
+    <!-- User Grid -->
+    <div class="grid-cards stagger" style="padding-bottom: var(--space-12);">
         {% for u in users %}
-            <div class="glass-card" style="padding: 30px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; transition: transform 0.2s ease;">
-                
-                <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(245, 158, 11, 0.1); border: 2px solid var(--primary); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; margin-bottom: 15px;">
+            <div class="glass-card" style="padding: var(--space-8) var(--space-5); display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <div class="avatar avatar-xl avatar-accent" style="margin-bottom: var(--space-4);">
                     {{ u.first_name|first }}{{ u.last_name|first }}
                 </div>
-                
-                <h3 style="margin: 0 0 5px 0; color: var(--text-dark); font-size: 1.25rem; font-weight: 700;">{{ u.first_name }} {{ u.last_name }}</h3>
-                <p style="margin: 0 0 20px 0; color: var(--text-muted); font-size: 0.95rem; font-weight: 500;">{{ u.profile.headline|default:"Professional" }}</p>
-                
-                <div style="margin-top: auto; width: 100%; display: flex; gap: 10px; justify-content: center;">
-                    <a href="{% url 'network:profile' u.username %}" class="glass-btn" style="background: transparent !important; color: var(--text-dark) !important; border: 1px solid var(--border-light) !important; padding: 8px 18px !important; font-size: 0.85rem !important;">Profile</a>
-                    
-                   {% if u in connected_users %}
-                        <button disabled class="glass-btn" style="background: rgba(16,185,129,0.1) !important; color: #059669 !important; border: 1px solid #059669 !important; padding: 8px 18px !important; font-size: 0.85rem !important; cursor: default;">Connected</button>
-                    
+                <h3 style="margin-bottom: var(--space-1); font-size: var(--text-lg);">{{ u.first_name }} {{ u.last_name }}</h3>
+                <p style="color: var(--text-tertiary); font-size: var(--text-sm); margin-bottom: var(--space-5);">{{ u.profile.headline|default:"Professional" }}</p>
+
+                <div style="margin-top: auto; width: 100%; display: flex; gap: var(--space-3); justify-content: center;">
+                    <a href="{% url 'network:profile' u.username %}" class="glass-btn-ghost" style="padding: 8px 18px; font-size: var(--text-xs);">Profile</a>
+                    {% if u in connected_users %}
+                        <button disabled class="glass-btn-ghost" style="padding: 8px 18px; font-size: var(--text-xs); color: var(--success); border-color: var(--success); cursor: default; background: var(--success-light);">Connected</button>
                     {% elif u in pending_users %}
-                        <button class="glass-btn connect-btn" 
-                                data-url="{% url 'network:send_request' u.username %}"
-                                style="background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; border: 1px solid #ef4444 !important; padding: 8px 18px !important; font-size: 0.85rem !important;">
-                            Withdraw
-                        </button>
-                    
+                        <button class="glass-btn connect-btn" data-url="{% url 'network:send_request' u.username %}" style="padding: 8px 18px; font-size: var(--text-xs); background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); box-shadow: none;">Withdraw</button>
                     {% else %}
-                        <button class="glass-btn connect-btn" 
-                                data-url="{% url 'network:send_request' u.username %}"
-                                style="padding: 8px 18px !important; font-size: 0.85rem !important;">
-                            Connect
-                        </button>
+                        <button class="glass-btn connect-btn" data-url="{% url 'network:send_request' u.username %}" style="padding: 8px 18px; font-size: var(--text-xs);">Connect</button>
                     {% endif %}
                 </div>
             </div>
         {% empty %}
-            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;" class="glass-card">
-                <span style="font-size: 3rem; opacity: 0.5; display: block; margin-bottom: 15px;">🔍</span>
-                <h3 style="color: var(--text-dark); font-weight: 700;">No professionals found.</h3>
-                <p style="color: var(--text-muted); font-weight: 500;">Try adjusting your search terms or checking your spelling.</p>
+            <div class="glass-card empty-state" style="grid-column: 1 / -1;">
+                <span class="empty-state-icon">🔍</span>
+                <h3>No professionals found.</h3>
+                <p>Try adjusting your search terms or checking your spelling.</p>
             </div>
         {% endfor %}
     </div>
-
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const connectButtons = document.querySelectorAll('.connect-btn');
     const csrfToken = '{{ csrf_token }}';
-
-    connectButtons.forEach(button => {
+    document.querySelectorAll('.connect-btn').forEach(button => {
         button.addEventListener('click', async function(e) {
-            e.preventDefault(); 
-            
-            const btn = this;
-            const targetUrl = btn.getAttribute('data-url');
-            
+            e.preventDefault();
+            const btn = this, targetUrl = btn.getAttribute('data-url');
             const originalText = btn.innerHTML;
-            btn.innerHTML = 'Sending...';
-            btn.style.opacity = '0.7';
-            btn.disabled = true;
-
+            btn.innerHTML = '...'; btn.style.opacity = '0.7'; btn.disabled = true;
             try {
                 const response = await fetch(targetUrl, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrfToken,
-                        'Content-Type': 'application/json'
-                    }
+                    method: 'POST', headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' }
                 });
-                
                 const data = await response.json();
-
-               // 3. Update the button permanently based on Django's response
-                // 3. Update the button permanently based on Django's response
+                btn.style.opacity = '1'; btn.disabled = false;
                 if (data.status === 'sent') {
-                    // Turn it into a Red Withdraw Button (Using setProperty for !important)
                     btn.innerHTML = 'Withdraw';
-                    btn.style.setProperty('background', 'rgba(239, 68, 68, 0.1)', 'important');
-                    btn.style.setProperty('color', '#ef4444', 'important');
-                    btn.style.setProperty('border', '1px solid #ef4444', 'important');
-                    btn.style.opacity = '1';
-                    btn.disabled = false;
+                    btn.style.background = 'var(--danger-light)'; btn.style.color = 'var(--danger)'; btn.style.borderColor = 'var(--danger)'; btn.style.boxShadow = 'none';
                 } else if (data.status === 'withdrawn') {
-                    // Turn it back into a standard Connect Button
                     btn.innerHTML = 'Connect';
-                    btn.style.setProperty('background', 'var(--primary)', 'important');
-                    btn.style.setProperty('color', 'white', 'important');
-                    btn.style.setProperty('border', 'none', 'important');
-                    btn.style.opacity = '1';
-                    btn.disabled = false;
-                } else {
-                    btn.innerHTML = originalText;
-                    btn.style.opacity = '1';
-                    btn.disabled = false;
-                }
-                
-            } catch (error) {
-                console.error("Network error:", error);
-                btn.innerHTML = originalText;
-                btn.style.opacity = '1';
-                btn.disabled = false;
-            }
+                    btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = ''; btn.style.boxShadow = '';
+                } else { btn.innerHTML = originalText; }
+            } catch (error) { btn.innerHTML = originalText; btn.style.opacity = '1'; btn.disabled = false; }
         });
     });
 });

@@ -4,82 +4,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | A1 Networks</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="{% static 'css/login.css' %}?v=2.0">
-
-    <style>
-        /* Small fixes to ensure the page feels "locked in" */
-        body {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f4fbf9; /* Soft Mint */
-            height: 100vh;
-            margin: 0;
-        }
-    </style>
+    <title>Sign In | A1 Networks</title>
+    <meta name="description" content="Sign in to your A1 Networks professional account.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}?v=20.0">
 </head>
 <body>
 
-    <div id="login-container" style="width: 100%; max-width: 450px; padding: 20px; animation: fadeIn 0.8s ease;">
-        
-        <div style="text-align: center; margin-bottom: 30px;">
-            <a href="/" style="text-decoration: none;">
-                <h1 style="font-family: 'Poppins', sans-serif; font-weight: 800; color: #059669; margin: 0; font-size: 2rem;">A1 Networks</h1>
-            </a>
+    <div class="login-page">
+        <!-- ═══ BRAND PANEL ═══ -->
+        <div class="login-brand">
+            <div class="login-brand-content">
+                <h1><span>A1</span> Networks</h1>
+                <p>Connect with verified professionals, discover opportunities, and grow your career in a trusted network.</p>
+                <div class="brand-stats">
+                    <div class="brand-stat">
+                        <strong>500+</strong>
+                        <span>Professionals</span>
+                    </div>
+                    <div class="brand-stat">
+                        <strong>1K+</strong>
+                        <span>Connections</span>
+                    </div>
+                    <div class="brand-stat">
+                        <strong>200+</strong>
+                        <span>Jobs Posted</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="glass-card" style="background: #ffffff; padding: 40px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.04); border: 1px solid #e2e8f0;">
-            
-            <div style="text-align: center; margin-bottom: 30px;">
-                <h2 style="font-family: 'Poppins', sans-serif; font-weight: 700; color: #0f172a; margin: 0 0 8px 0;">Welcome Back</h2>
-                <p style="color: #64748b; font-size: 0.95rem; margin: 0;">Sign in to your professional network</p>
-            </div>
-
-            {% if form.errors %}
-                <div style="background: #fef2f2; border: 1px solid #fee2e2; padding: 12px; border-radius: 12px; margin-bottom: 20px;">
-                    <p style="color: #dc2626; font-size: 0.85rem; font-weight: 600; margin: 0; text-align: center;">Invalid username or password.</p>
-                </div>
-            {% endif %}
-
-            <form method="POST" action="{% url 'accounts:login' %}" style="display: flex; flex-direction: column; gap: 20px;">
-                {% csrf_token %}
-
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <label style="font-weight: 600; font-size: 0.85rem; color: #0f172a;">Username or Email</label>
-                    <input type="text" name="username" class="c-input" placeholder="Enter your username" required>
-                </div>
-
-                <div style="display: flex; flex-direction: column; gap: 8px; position: relative;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <label style="font-weight: 600; font-size: 0.85rem; color: #0f172a;">Password</label>
-                        <a href="#" style="color: #059669; font-size: 0.8rem; font-weight: 600; text-decoration: none;">Forgot?</a>
+        <!-- ═══ FORM PANEL ═══ -->
+        <div class="login-form-panel">
+            <div class="login-form-wrapper">
+                <div class="login-card">
+                    <div style="text-align: center; margin-bottom: 32px;">
+                        <h2>Welcome Back</h2>
+                        <p class="subtitle">Sign in to your professional network</p>
                     </div>
-                    <input type="password" name="password" id="pwdField" class="c-input" placeholder="••••••••" required>
-                    <span id="eyeToggle" onclick="togglePwd()" style="position: absolute; right: 15px; top: 38px; cursor: pointer; color: #94a3b8; font-size: 1.1rem;">👁</span>
+
+                    {% if form.errors %}
+                        <div class="error-box">
+                            <p>Invalid username or password. Please try again.</p>
+                        </div>
+                    {% endif %}
+
+                    <form method="POST" action="{% url 'accounts:login' %}" style="display: flex; flex-direction: column; gap: 20px;">
+                        {% csrf_token %}
+
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary);">Username or Email</label>
+                            <input type="text" name="username" class="c-input" placeholder="Enter your username" required autocomplete="username">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary);">Password</label>
+                                <a href="#" style="color: var(--accent); font-size: 0.8rem; font-weight: 600; text-decoration: none;">Forgot?</a>
+                            </div>
+                            <div style="position: relative;">
+                                <input type="password" name="password" id="pwdField" class="c-input" placeholder="••••••••" required autocomplete="current-password">
+                                <button type="button" class="pwd-toggle" id="eyeToggle" onclick="togglePwd()">👁</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="c-btn" style="margin-top: 8px;">Sign In</button>
+
+                        <div style="display: flex; align-items: center; gap: 12px; margin: 8px 0;">
+                            <div style="flex: 1; height: 1px; background: var(--border-strong);"></div>
+                            <span style="font-size: 0.75rem; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Or continue with</span>
+                            <div style="flex: 1; height: 1px; background: var(--border-strong);"></div>
+                        </div>
+
+                        <div style="display: flex; justify-content: center; gap: 16px;">
+                            <div class="c-soc">G</div>
+                            <div class="c-soc">f</div>
+                            <div class="c-soc">𝕏</div>
+                        </div>
+                    </form>
+
+                    <div class="c-signup">
+                        New to the network? <a href="{% url 'accounts:register' %}">Join Now</a>
+                    </div>
                 </div>
-
-                <button type="submit" class="c-btn" style="margin-top: 10px;">Sign In</button>
-
-                <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
-                    <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
-                    <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Or continue with</span>
-                    <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
-                </div>
-
-                <div style="display: flex; justify-content: center; gap: 15px;">
-                    <div class="c-soc">G</div>
-                    <div class="c-soc">f</div>
-                    <div class="c-soc">𝕏</div>
-                </div>
-            </form>
-
-            <div style="text-align: center; margin-top: 30px; font-size: 0.9rem;">
-                <span style="color: #64748b;">New to the network?</span>
-                <a href="{% url 'accounts:register' %}" style="color: #059669; font-weight: 700; text-decoration: none; margin-left: 5px;">Join Now</a>
             </div>
         </div>
     </div>
@@ -88,21 +97,9 @@
         function togglePwd() {
             const f = document.getElementById('pwdField');
             const e = document.getElementById('eyeToggle');
-            if (f.type === 'password') { 
-                f.type = 'text'; 
-                e.textContent = '🙈'; 
-            } else { 
-                f.type = 'password'; 
-                e.textContent = '👁'; 
-            }
+            if (f.type === 'password') { f.type = 'text'; e.textContent = '🙈'; }
+            else { f.type = 'password'; e.textContent = '👁'; }
         }
     </script>
-
-    <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
 </body>
 </html>
