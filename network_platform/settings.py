@@ -7,11 +7,10 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#!etaaiz^bv+t$$3#k3wiyf#f&5+j-a(6iv^_xsvwah@ur=e#$'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 # Allow local traffic and Render cloud traffic
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.onrender.com']
 
@@ -44,7 +43,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'network_platform.urls'
-
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
