@@ -11,7 +11,14 @@ SECRET_KEY = os.environ['SECRET_KEY']# SECURITY WARNING: don't run with debug tu
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 # Allow local traffic and Render cloud traffic
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.onrender.com']
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://a1-networks.onrender.com",
+]
 # Application definition
 INSTALLED_APPS = [
     'daphne',  # 1. MUST be at the very top for real-time to work
